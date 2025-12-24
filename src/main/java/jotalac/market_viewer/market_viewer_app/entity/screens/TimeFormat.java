@@ -1,0 +1,15 @@
+package jotalac.market_viewer.market_viewer_app.entity.screens;
+
+public enum TimeFormat {
+    TWELVE_HOUR("12h"),
+    TWENTY_FOUR_HOUR("24h");
+
+    private final String displayValue;
+    TimeFormat(String displayValue) {
+        this.displayValue = displayValue;
+    }
+
+    public String getDisplayValue() {
+        return displayValue;
+    }
+}
