@@ -9,11 +9,14 @@ import jotalac.market_viewer.market_viewer_app.exception.device.DeviceException;
 import jotalac.market_viewer.market_viewer_app.exception.user.UserException;
 import org.springframework.cglib.core.Local;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
@@ -81,5 +84,19 @@ public class RestExceptionHandler {
 
         return new ErrorResponse(LocalDateTime.now(), errors.toString(), request.getRequestURI());
     }
+
+//    @ExceptionHandler(Exception.class)
+//    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+//    public ErrorResponse handleAllUnhandledExceptions(HttpServletRequest request, Exception e) {
+//        // Log the actual error on the server so you can debug it
+//        // logger.error("Unhandled exception: ", e);
+//
+//        // Return a generic response with NO message from the exception
+//        return new ErrorResponse(
+//                LocalDateTime.now(),
+//                "An unexpected error occurred", // Or just leave empty ""
+//                request.getRequestURI()
+//        );
+//    }
 
 }

@@ -2,6 +2,8 @@ package jotalac.market_viewer.market_viewer_app.service;
 
 import jakarta.transaction.Transactional;
 import jotalac.market_viewer.market_viewer_app.dto.api_key.ApiKeyCreateDto;
+import jotalac.market_viewer.market_viewer_app.dto.api_key.ApiKeyDto;
+import jotalac.market_viewer.market_viewer_app.dto.api_key.ApiKeyDtoMapper;
 import jotalac.market_viewer.market_viewer_app.dto.user.UserCreateDto;
 import jotalac.market_viewer.market_viewer_app.dto.user.UserDto;
 import jotalac.market_viewer.market_viewer_app.dto.user.UserDtoMapper;
@@ -15,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -23,6 +27,7 @@ public class UserService {
     private final UserDtoMapper userDtoMapper;
     private final PasswordEncoder passwordEncoder;
     private final ApiKeyRepository apiKeyRepository;
+    private final ApiKeyDtoMapper apiKeyDtoMapper;
 
     @Transactional
     public UserDto createUser(UserCreateDto userCreateDto) {
@@ -46,6 +51,15 @@ public class UserService {
 
         apiKey.setValue(apiKeyCreateDto.keyValue());
         apiKeyRepository.save(apiKey);
+    }
+
+    @Transactional
+    public List<ApiKeyDto> getUserApiKeys(Integer userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+
+        List<ApiKey> userApiKeys = apiKeyRepository.findByUser(user);
+
+        return apiKeyDtoMapper.toDtoList(userApiKeys);
     }
 
     private void validateUserExistence(String username, String email) {

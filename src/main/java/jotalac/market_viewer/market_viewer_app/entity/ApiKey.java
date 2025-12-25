@@ -1,6 +1,7 @@
 package jotalac.market_viewer.market_viewer_app.entity;
 
 import jakarta.persistence.*;
+import jotalac.market_viewer.market_viewer_app.util.ApiKeyConvertor;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,6 +20,7 @@ import java.util.Set;
 @AllArgsConstructor
 public class ApiKey extends AbstractEntity{
 
+    @Convert(converter = ApiKeyConvertor.class)
     @Column(nullable = false)
     private String value;
 

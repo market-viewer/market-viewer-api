@@ -30,7 +30,13 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-security-oauth2-client")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
-    implementation("me.paulschwarz:spring-dotenv:4.0.0")
+
+//    implementation(platform("me.paulschwarz:spring-dotenv-bom"))
+//    implementation("me.paulschwarz:springboot3-dotenv")
+    implementation(platform("me.paulschwarz:spring-dotenv-bom:5.0.1"))
+    implementation("me.paulschwarz:springboot4-dotenv")
+//    implementation("me.paulschwarz:spring-dotenv:5.0.1")
+
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("io.finnhub:kotlin-client:2.0.22")

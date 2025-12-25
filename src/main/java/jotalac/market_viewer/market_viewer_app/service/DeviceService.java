@@ -28,6 +28,7 @@ public class DeviceService {
     private final DeviceRepository deviceRepository;
     private final UserRepository userRepository;
     private final ScreenRepository screenRepository;
+    private final UserService userService;
 
     @Transactional
     public DeviceCreateResponse createDevice(DeviceCreateRequest deviceCreateRequest, String username) {
@@ -78,6 +79,24 @@ public class DeviceService {
 
         screenRepository.save(newScreen);
         return new ScreenDto(newScreen.getId(), screenType);
+    }
+
+    @Transactional
+    public void removeScreen(Integer deviceId, Integer screenId, String username) {
+        User user  = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new NotFoundException("User not found");
+        }
+
+        Device device = deviceRepository.findById(deviceId).orElseThrow(() -> new NotFoundException("Device with id - " + deviceId + " not found"));
+
+        if (device.getUser().getId().equals(user.getId())) {
+            throw new IllegalStateException("User doesn't own this device");
+        }
+
+        Screen screen = screenRepository.findById(screenId).orElseThrow(() -> new NotFoundException("Screen with id - " + screenId + " not found"));
+
+        screenRepository.delete(screen);
     }
 
     private Boolean canAddNewScreen(Device device) {
