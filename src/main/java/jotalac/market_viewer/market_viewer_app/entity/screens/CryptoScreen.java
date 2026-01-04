@@ -3,7 +3,6 @@ package jotalac.market_viewer.market_viewer_app.entity.screens;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
-import jotalac.market_viewer.market_viewer_app.entity.Device;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,7 +15,6 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 public class CryptoScreen extends Screen{
-
 
     @Column(nullable = false)
     @NotBlank
@@ -53,9 +51,9 @@ public class CryptoScreen extends Screen{
     @JoinColumn(name = "price_data_id", unique = true)
     private CryptoPriceData priceData = new CryptoPriceData();
 
-
     @Override
     public ScreenType getScreenType() {
         return ScreenType.CRYPTO;
     }
+
 }
