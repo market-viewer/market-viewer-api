@@ -6,6 +6,7 @@ import jotalac.market_viewer.market_viewer_app.dto.ErrorResponse;
 import jotalac.market_viewer.market_viewer_app.exception.AlreadyExistsException;
 import jotalac.market_viewer.market_viewer_app.exception.NotFoundException;
 import jotalac.market_viewer.market_viewer_app.exception.device.DeviceException;
+import jotalac.market_viewer.market_viewer_app.exception.screen.ScreenException;
 import jotalac.market_viewer.market_viewer_app.exception.user.UserException;
 import org.springframework.cglib.core.Local;
 import org.springframework.http.HttpStatus;
@@ -50,6 +51,12 @@ public class RestExceptionHandler {
         return new ErrorResponse(LocalDateTime.now(), e.getMessage(), request.getRequestURI());
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse illegalStateException(HttpServletRequest request, IllegalStateException e) {
+        return new ErrorResponse(LocalDateTime.now(), e.getMessage(), request.getRequestURI());
+    }
+
     @ExceptionHandler(UserException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse userException(HttpServletRequest request, UserException e) {
@@ -62,6 +69,12 @@ public class RestExceptionHandler {
         return new ErrorResponse(LocalDateTime.now(), e.getMessage(), request.getRequestURI());
     }
 
+    @ExceptionHandler(ScreenException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse screenException(HttpServletRequest request, ScreenException e) {
+        return new ErrorResponse(LocalDateTime.now(), e.getMessage(), request.getRequestURI());
+    }
+
     @ExceptionHandler(AlreadyExistsException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse alreadyExistsException(HttpServletRequest request, AlreadyExistsException e) {
@@ -71,18 +84,19 @@ public class RestExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse missingRequestBodyException(HttpServletRequest request, HttpMessageNotReadableException e) {
-        return new ErrorResponse(LocalDateTime.now(), "Request body is not valid", request.getRequestURI());
+        return new ErrorResponse(LocalDateTime.now(), "Request body invalid", request.getRequestURI());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse dataValidationError(HttpServletRequest request, MethodArgumentNotValidException e) {
-        Map<String, String> errors = new HashMap<>();
-        e.getBindingResult().getFieldErrors().forEach(error ->
-                errors.put(error.getField(), error.getDefaultMessage())
-        );
+    public ErrorResponse handleValidation(HttpServletRequest request, MethodArgumentNotValidException e) {
+        // Instead of .toString(), consider passing the Map directly
+        // if your ErrorResponse 'message' field is an Object
+        String detail = e.getBindingResult().getFieldErrors().stream()
+                .map(err -> err.getField() + ": " + err.getDefaultMessage())
+                .collect(java.util.stream.Collectors.joining(", "));
 
-        return new ErrorResponse(LocalDateTime.now(), errors.toString(), request.getRequestURI());
+        return new ErrorResponse(LocalDateTime.now(), "Validation failed: " + detail, request.getRequestURI());
     }
 
 //    @ExceptionHandler(Exception.class)

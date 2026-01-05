@@ -4,17 +4,14 @@ import jakarta.transaction.Transactional;
 import jotalac.market_viewer.market_viewer_app.dto.device.DeviceCreateRequest;
 import jotalac.market_viewer.market_viewer_app.dto.device.DeviceCreateResponse;
 import jotalac.market_viewer.market_viewer_app.dto.screen.ScreenDto;
-import jotalac.market_viewer.market_viewer_app.dto.screen.update.*;
-import jotalac.market_viewer.market_viewer_app.dto.screen.update.mapper.AITextScreenUpdateMapper;
-import jotalac.market_viewer.market_viewer_app.dto.screen.update.mapper.ClockScreenUpdateMapper;
-import jotalac.market_viewer.market_viewer_app.dto.screen.update.mapper.CryptoScreenUpdateMapper;
-import jotalac.market_viewer.market_viewer_app.dto.screen.update.mapper.StockScreenUpdateMapper;
+import jotalac.market_viewer.market_viewer_app.dto.screen.ScreenMapper;
 import jotalac.market_viewer.market_viewer_app.entity.Device;
 import jotalac.market_viewer.market_viewer_app.entity.User;
 import jotalac.market_viewer.market_viewer_app.entity.screens.*;
 import jotalac.market_viewer.market_viewer_app.exception.AlreadyExistsException;
 import jotalac.market_viewer.market_viewer_app.exception.NotFoundException;
 import jotalac.market_viewer.market_viewer_app.exception.device.DeviceScreenLimitExceeded;
+import jotalac.market_viewer.market_viewer_app.exception.screen.ScreenDoesntBelongToDeviceException;
 import jotalac.market_viewer.market_viewer_app.repository.DeviceRepository;
 import jotalac.market_viewer.market_viewer_app.repository.ScreenRepository;
 import jotalac.market_viewer.market_viewer_app.repository.UserRepository;
@@ -33,10 +30,7 @@ public class DeviceService {
     private final UserRepository userRepository;
     private final ScreenRepository screenRepository;
     private final UserService userService;
-    private final AITextScreenUpdateMapper aITextScreenUpdateMapper;
-    private final ClockScreenUpdateMapper clockScreenUpdateMapper;
-    private final CryptoScreenUpdateMapper cryptoScreenUpdateMapper;
-    private final StockScreenUpdateMapper stockScreenUpdateMapper;
+    private final ScreenMapper screenMapper;
 
     @Transactional
     public DeviceCreateResponse createDevice(DeviceCreateRequest deviceCreateRequest, String username) {
@@ -60,65 +54,54 @@ public class DeviceService {
     }
 
     @Transactional
-    public ScreenDto addScreen(Integer deviceId, ScreenType screenType, String username) {
+    public ScreenDto addScreen(Integer deviceId, ScreenDto screenDto, String username) {
         Device device = deviceRepository.findById(deviceId).orElseThrow(() -> new NotFoundException("Device with id - " + deviceId + " not found"));
         User user = userRepository.findByUsername(username);
         if  (user == null) {
             throw new NotFoundException("User not found");
         }
 
-        if (!deviceBelongsToUser(device, user)) {
-            throw new IllegalStateException("User doesn't own this device");
-        }
+        deviceBelongsToUser(device, user);
 
         Integer deviceScreenCount = screenRepository.countScreensByDevice(device);
         if (deviceScreenCount >= DEVICE_MAX_SCREENS) {
             throw new DeviceScreenLimitExceeded("Screen limit exceeded");
         }
+//
+//        Screen newScreen = switch (screenType) {
+//            case CRYPTO -> new CryptoScreen();
+//            case STOCK ->  new StockScreen();
+//            case CLOCK ->  new ClockScreen();
+//            case AI_TEXT -> new AITextScreen();
+//            default -> throw new IllegalArgumentException("Invalid screen type");
+//        };
 
-        Screen newScreen = switch (screenType) {
-            case CRYPTO -> new CryptoScreen();
-            case STOCK ->  new StockScreen();
-            case CLOCK ->  new ClockScreen();
-            case AI_TEXT -> new AITextScreen();
-            default -> throw new IllegalArgumentException("Invalid screen type");
-        };
+        Screen newScreen = screenMapper.toEntity(screenDto);
 
         newScreen.setDevice(device);
         newScreen.setPosition(deviceScreenCount);
 
-        screenRepository.save(newScreen);
-        return new ScreenDto(newScreen.getId(), screenType);
+        newScreen = screenRepository.save(newScreen);
+        return screenMapper.toDto(newScreen);
     }
 
     @Transactional
-    public ScreenDto updateScreen(Integer deviceId, Integer screenId, ScreenUpdateRequest screenUpdateRequest, String username) {
+    public ScreenDto updateScreen(Integer deviceId, Integer screenId, ScreenDto screenDto, String username) {
         User user = userRepository.findByUsername(username);
         if (user == null) throw new NotFoundException("User not found");
         Device device = deviceRepository.findById(deviceId).orElseThrow(() -> new NotFoundException("Device not found"));
 
-        if (!deviceBelongsToUser(device, user)) {
-            throw new IllegalStateException("User doesn't own this device");
-        }
+        deviceBelongsToUser(device, user);
 
         Screen screen = screenRepository.findById(screenId).orElseThrow(() -> new NotFoundException("Screen not found"));
-
-        if (screen instanceof AITextScreen aiTextScreen  && screenUpdateRequest instanceof AITextScreenUpdateRequest aiScreenRequest) {
-            aITextScreenUpdateMapper.updateEntityFromDto(aiScreenRequest, aiTextScreen);
-        }
-        else if (screen instanceof ClockScreen clockScreen && screenUpdateRequest instanceof ClockScreenUpdateRequest clockScreenRequest) {
-            clockScreenUpdateMapper.updateEntityFromDto(clockScreenRequest, clockScreen);
-        }
-        else if (screen instanceof CryptoScreen cryptoScreen && screenUpdateRequest instanceof CryptoScreenUpdateRequest cryptoScreenRequest) {
-            cryptoScreenUpdateMapper.updateEntityFromDto(cryptoScreenRequest, cryptoScreen);
-        }
-        else if (screen instanceof StockScreen stockScreen && screenUpdateRequest instanceof StockScreenUpdateRequest stockScreenUpdateRequest) {
-            stockScreenUpdateMapper.updateEntityFromDto(stockScreenUpdateRequest, stockScreen);
-        } else {
-            throw new IllegalArgumentException("Request type doesn't match the screen type");
+        if (!screenBelongsToDevice(screen, device)) {
+            throw new ScreenDoesntBelongToDeviceException("Screen doesnt belong to this device");
         }
 
-        return new ScreenDto(screen.getId(), screen.getScreenType());
+        screenMapper.updateEntityFromDto(screenDto, screen);
+        screen = screenRepository.save(screen);
+
+        return screenMapper.toDto(screen);
     }
 
 
@@ -130,10 +113,7 @@ public class DeviceService {
         }
 
         Device device = deviceRepository.findById(deviceId).orElseThrow(() -> new NotFoundException("Device with id - " + deviceId + " not found"));
-
-        if (device.getUser().getId().equals(user.getId())) {
-            throw new IllegalStateException("User doesn't own this device");
-        }
+        deviceBelongsToUser(device, user);
 
         Screen screen = screenRepository.findById(screenId).orElseThrow(() -> new NotFoundException("Screen with id - " + screenId + " not found"));
 
@@ -146,15 +126,28 @@ public class DeviceService {
         return screenRepository.countScreensByDevice(device) < DEVICE_MAX_SCREENS;
     }
 
-    private Boolean deviceBelongsToUser(Device device, User user) {
-        return device.getUser().getUsername().equals(user.getUsername());
+    private void deviceBelongsToUser(Device device, User user) {
+        if (!device.getUser().getUsername().equals(user.getUsername())) {
+            throw new IllegalStateException("User doesn't own this device");
+        }
+    }
+
+    private Boolean screenBelongsToDevice(Screen screen, Device device) {
+        return screen.getDevice().getId().equals(device.getId());
     }
 
     @Transactional
-    public List<Screen> getAllScreensForDevice(Integer deviceId) {
+    public List<ScreenDto> getAllScreensForDevice(Integer deviceId, String username) {
         Device device = deviceRepository.findById(deviceId).orElseThrow(() -> new NotFoundException("Device not found"));
+
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new NotFoundException("User not found");
+        }
+        deviceBelongsToUser(device, user);
+
         List<Screen> deviceScreens = screenRepository.getScreensByDevice(device);
 
-        return deviceScreens;
+        return screenMapper.toDtos(deviceScreens);
     }
 }

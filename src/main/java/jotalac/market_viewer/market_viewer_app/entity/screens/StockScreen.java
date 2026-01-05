@@ -6,12 +6,14 @@ import jakarta.validation.constraints.Positive;
 import jotalac.market_viewer.market_viewer_app.entity.Device;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
 @DiscriminatorValue("STOCK")
 @Getter
+@Setter
 @NoArgsConstructor
 public class StockScreen extends Screen{
 
@@ -39,7 +41,7 @@ public class StockScreen extends Screen{
 
     @Column(nullable = false)
     @Positive
-    private Integer fetchInterval = 10;
+    private Integer fetchInterval = 10; // minutes
 
     @Column
     private LocalDateTime lastFetchTime;

@@ -5,12 +5,14 @@ import jakarta.persistence.*;
 import jotalac.market_viewer.market_viewer_app.entity.Device;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import static jotalac.market_viewer.market_viewer_app.config.ValidationConstants.DEFAULT_BG_COLOR;
 
 @Entity
 @DiscriminatorValue("CLOCK")
 @Getter
+@Setter
 @NoArgsConstructor
 public class ClockScreen extends Screen {
 

@@ -4,21 +4,15 @@ import jakarta.validation.Valid;
 import jotalac.market_viewer.market_viewer_app.dto.MessageResponse;
 import jotalac.market_viewer.market_viewer_app.dto.device.DeviceCreateRequest;
 import jotalac.market_viewer.market_viewer_app.dto.device.DeviceCreateResponse;
-import jotalac.market_viewer.market_viewer_app.dto.screen.ScreenCreateRequest;
 import jotalac.market_viewer.market_viewer_app.dto.screen.ScreenDto;
-import jotalac.market_viewer.market_viewer_app.dto.screen.update.ScreenUpdateRequest;
-import jotalac.market_viewer.market_viewer_app.entity.User;
-import jotalac.market_viewer.market_viewer_app.entity.screens.Screen;
 import jotalac.market_viewer.market_viewer_app.service.DeviceService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/device")
@@ -37,27 +31,27 @@ public class DeviceController {
     }
 
     @PostMapping("/{deviceId}/screen")
-    public ResponseEntity<ScreenDto> addScreen(@PathVariable Integer deviceId, @Valid @RequestBody ScreenCreateRequest screenCreateRequest) {
-        ScreenDto newScreen = deviceService.addScreen(deviceId, screenCreateRequest.type(), "test");
+    public ResponseEntity<ScreenDto> addScreen(@PathVariable Integer deviceId, @Valid @RequestBody ScreenDto screenDto) {
+        ScreenDto newScreen = deviceService.addScreen(deviceId, screenDto, "test");
         return ResponseEntity.status(HttpStatus.CREATED).body(newScreen);
     }
 
     @PutMapping("{deviceId}/screen/{screenId}")
-    public ResponseEntity<ScreenDto> updateScreen(@PathVariable Integer deviceId, @PathVariable Integer screenId, @Valid @RequestBody ScreenUpdateRequest screenUpdateRequest) {
-        ScreenDto screenDto = deviceService.updateScreen(deviceId, screenId, screenUpdateRequest, "test");
-        return ResponseEntity.status(HttpStatus.OK).body(screenDto);
+    public ResponseEntity<ScreenDto> updateScreen(@PathVariable Integer deviceId, @PathVariable Integer screenId, @Valid @RequestBody ScreenDto screenDto) {
+        ScreenDto updatedScreen = deviceService.updateScreen(deviceId, screenId, screenDto, "test");
+        return ResponseEntity.status(HttpStatus.OK).body(updatedScreen);
     }
 
     @DeleteMapping("/{deviceId}/screen/{screenId}")
-    @PreAuthorize("isAuthenticated()")
+//    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<MessageResponse> removeScreen(@PathVariable Integer deviceId, @PathVariable Integer screenId, Principal principal) {
-        deviceService.removeScreen(deviceId, screenId, principal.getName());
+        deviceService.removeScreen(deviceId, screenId, "test");
         return ResponseEntity.status(HttpStatus.CREATED).body(new MessageResponse("Screen removed successfully"));
     }
 
     @GetMapping("/{deviceId}/screen")
-    public ResponseEntity<List<Screen>> getDeviceScreens(@PathVariable Integer deviceId) {
-        List<Screen> deviceScreens = deviceService.getAllScreensForDevice(deviceId);
+    public ResponseEntity<List<ScreenDto>> getDeviceScreens(@PathVariable Integer deviceId) {
+        List<ScreenDto> deviceScreens = deviceService.getAllScreensForDevice(deviceId, "test");
 
         return ResponseEntity.status(HttpStatus.OK).body(deviceScreens);
     }

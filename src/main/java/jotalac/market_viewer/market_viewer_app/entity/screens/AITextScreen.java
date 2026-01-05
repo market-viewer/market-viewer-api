@@ -4,7 +4,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jotalac.market_viewer.market_viewer_app.entity.Device;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import static jotalac.market_viewer.market_viewer_app.config.ValidationConstants.DEFAULT_BG_COLOR;
 
@@ -12,13 +14,15 @@ import static jotalac.market_viewer.market_viewer_app.config.ValidationConstants
 @Entity
 @DiscriminatorValue("AI_TEXT")
 @NoArgsConstructor
+@Getter
+@Setter
 public class AITextScreen extends Screen{
 
     @Column(nullable = false)
     private String prompt = "";
 
     @Column(nullable = false)
-    private String displayTex = "";
+    private String displayText = "";
 
     @Column(nullable = false)
     private String bgColor = DEFAULT_BG_COLOR;
