@@ -6,6 +6,7 @@ import jotalac.market_viewer.market_viewer_app.entity.AbstractEntity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -26,4 +27,7 @@ public class CryptoPriceData extends AbstractEntity {
 
     @Column
     private List<Double> graphData;
+
+    @Column
+    private LocalDateTime fetchTime;
 }

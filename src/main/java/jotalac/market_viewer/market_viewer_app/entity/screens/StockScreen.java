@@ -43,9 +43,6 @@ public class StockScreen extends Screen{
     @Positive
     private Integer fetchInterval = 10; // minutes
 
-    @Column
-    private LocalDateTime lastFetchTime;
-
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "price_data_id")
     private StockPriceData priceData = new StockPriceData();

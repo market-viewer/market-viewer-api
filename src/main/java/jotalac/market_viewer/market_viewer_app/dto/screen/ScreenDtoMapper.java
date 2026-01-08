@@ -6,7 +6,7 @@ import org.mapstruct.*;
 import java.util.List;
 
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-public interface ScreenMapper {
+public interface ScreenDtoMapper {
 
     default ScreenDto toDto(Screen screen) {
         if (screen instanceof AITextScreen s) return toAITextDto(s);
@@ -54,14 +54,12 @@ public interface ScreenMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "device", ignore = true)
     @Mapping(target = "position", ignore = true)
-    @Mapping(target = "lastFetchTime", ignore = true) // Read-only field
     @Mapping(target = "priceData", ignore = true)     // Read-only field
     void updateCrypto(CryptoScreenDto dto, @MappingTarget CryptoScreen entity);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "device", ignore = true)
     @Mapping(target = "position", ignore = true)
-    @Mapping(target = "lastFetchTime", ignore = true) // Read-only field
     @Mapping(target = "priceData", ignore = true)     // Read-only field
     void updateStock(StockScreenDto dto, @MappingTarget StockScreen entity);
 
@@ -72,34 +70,6 @@ public interface ScreenMapper {
         if (dto instanceof StockScreenDto d) return toStockEntity(d);
         throw new IllegalArgumentException("Unknown Screen DTO type: " + dto.getClass().getName());
     }
-
-//    @Mapping(target = "id", ignore = true)
-//    @Mapping(target = "device", ignore = true)
-//    @Mapping(target = "position", ignore = true)
-//    @Mapping (target = "displayText", ignore = true)
-//    AITextScreen toAITextEntity(AITextScreenDto dto);
-
-//    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-//    @Mapping(target = "id", ignore = true)
-//    @Mapping(target = "device", ignore = true)
-//    @Mapping(target = "position", ignore = true)
-//    ClockScreen toClockEntity(ClockScreenDto dto);
-
-//    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-//    @Mapping(target = "id", ignore = true)
-//    @Mapping(target = "device", ignore = true)
-//    @Mapping(target = "position", ignore = true)
-//    @Mapping(target = "lastFetchTime", ignore = true)
-//    @Mapping(target = "priceData", ignore = true)
-//    CryptoScreen toCryptoEntity(CryptoScreenDto dto);
-//
-//    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-//    @Mapping(target = "id", ignore = true)
-//    @Mapping(target = "device", ignore = true)
-//    @Mapping(target = "position", ignore = true)
-//    @Mapping(target = "lastFetchTime", ignore = true) // Read-only field
-//    @Mapping(target = "priceData", ignore = true)     // Read-only field
-//    StockScreen toStockEntity(StockScreenDto dto);
 
     default AITextScreen toAITextEntity(AITextScreenDto dto) {
         AITextScreen entity = new AITextScreen();

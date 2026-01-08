@@ -6,7 +6,7 @@ import jotalac.market_viewer.market_viewer_app.entity.screens.ScreenType;
 import lombok.Getter;
 import lombok.Setter;
 
-import static jotalac.market_viewer.market_viewer_app.config.ValidationConstants.DEFAULT_BG_COLOR;
+import static jotalac.market_viewer.market_viewer_app.config.Constants.DEFAULT_BG_COLOR;
 
 @Getter
 @Setter

@@ -7,9 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.HashSet;
-import java.util.Set;
-
 @Entity
 @Table(
         uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "endpoint"})
@@ -26,7 +23,7 @@ public class ApiKey extends AbstractEntity{
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private ApiKeyEndpoint endpoint;
+    private ApiKeyProvider endpoint;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id",  nullable = false)

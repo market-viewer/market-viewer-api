@@ -4,7 +4,7 @@ import jakarta.transaction.Transactional;
 import jotalac.market_viewer.market_viewer_app.dto.device.DeviceCreateRequest;
 import jotalac.market_viewer.market_viewer_app.dto.device.DeviceCreateResponse;
 import jotalac.market_viewer.market_viewer_app.dto.screen.ScreenDto;
-import jotalac.market_viewer.market_viewer_app.dto.screen.ScreenMapper;
+import jotalac.market_viewer.market_viewer_app.dto.screen.ScreenDtoMapper;
 import jotalac.market_viewer.market_viewer_app.entity.Device;
 import jotalac.market_viewer.market_viewer_app.entity.User;
 import jotalac.market_viewer.market_viewer_app.entity.screens.*;
@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-import static jotalac.market_viewer.market_viewer_app.config.ValidationConstants.DEVICE_MAX_SCREENS;
+import static jotalac.market_viewer.market_viewer_app.config.Constants.DEVICE_MAX_SCREENS;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +30,7 @@ public class DeviceService {
     private final UserRepository userRepository;
     private final ScreenRepository screenRepository;
     private final UserService userService;
-    private final ScreenMapper screenMapper;
+    private final ScreenDtoMapper screenDtoMapper;
 
     @Transactional
     public DeviceCreateResponse createDevice(DeviceCreateRequest deviceCreateRequest, String username) {
@@ -76,13 +76,13 @@ public class DeviceService {
 //            default -> throw new IllegalArgumentException("Invalid screen type");
 //        };
 
-        Screen newScreen = screenMapper.toEntity(screenDto);
+        Screen newScreen = screenDtoMapper.toEntity(screenDto);
 
         newScreen.setDevice(device);
         newScreen.setPosition(deviceScreenCount);
 
         newScreen = screenRepository.save(newScreen);
-        return screenMapper.toDto(newScreen);
+        return screenDtoMapper.toDto(newScreen);
     }
 
     @Transactional
@@ -98,10 +98,10 @@ public class DeviceService {
             throw new ScreenDoesntBelongToDeviceException("Screen doesnt belong to this device");
         }
 
-        screenMapper.updateEntityFromDto(screenDto, screen);
+        screenDtoMapper.updateEntityFromDto(screenDto, screen);
         screen = screenRepository.save(screen);
 
-        return screenMapper.toDto(screen);
+        return screenDtoMapper.toDto(screen);
     }
 
 
@@ -148,6 +148,6 @@ public class DeviceService {
 
         List<Screen> deviceScreens = screenRepository.getScreensByDevice(device);
 
-        return screenMapper.toDtos(deviceScreens);
+        return screenDtoMapper.toDtos(deviceScreens);
     }
 }

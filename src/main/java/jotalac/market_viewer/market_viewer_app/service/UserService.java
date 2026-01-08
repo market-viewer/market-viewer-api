@@ -8,6 +8,7 @@ import jotalac.market_viewer.market_viewer_app.dto.user.UserCreateDto;
 import jotalac.market_viewer.market_viewer_app.dto.user.UserDto;
 import jotalac.market_viewer.market_viewer_app.dto.user.UserDtoMapper;
 import jotalac.market_viewer.market_viewer_app.entity.ApiKey;
+import jotalac.market_viewer.market_viewer_app.entity.ApiKeyProvider;
 import jotalac.market_viewer.market_viewer_app.entity.User;
 import jotalac.market_viewer.market_viewer_app.exception.NotFoundException;
 import jotalac.market_viewer.market_viewer_app.exception.user.UserAlreadyExistsException;
@@ -51,6 +52,17 @@ public class UserService {
 
         apiKey.setValue(apiKeyCreateDto.keyValue());
         apiKeyRepository.save(apiKey);
+    }
+
+    @Transactional
+    public void deleteUserApiKey(ApiKeyProvider apiKeyProvider, Integer userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+
+        ApiKey apiKey = apiKeyRepository
+                .findByEndpointAndUser(apiKeyProvider, user)
+                .orElseThrow(() -> new NotFoundException("ApiKey not found"));
+
+        apiKeyRepository.delete(apiKey);
     }
 
     @Transactional

@@ -3,10 +3,9 @@ package jotalac.market_viewer.market_viewer_app.dto.user;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-import static jotalac.market_viewer.market_viewer_app.config.ValidationConstants.*;
+import static jotalac.market_viewer.market_viewer_app.config.Constants.*;
 
 public record UserCreateDto(
 

@@ -43,10 +43,6 @@ public class CryptoScreen extends Screen{
     @Positive
     private Integer fetchInterval = 10;
 
-    @Column
-    private LocalDateTime lastFetchTime;
-
-
     @OneToOne(orphanRemoval = true, cascade = CascadeType.ALL,  fetch = FetchType.LAZY)
     @JoinColumn(name = "price_data_id", unique = true)
     private CryptoPriceData priceData = new CryptoPriceData();

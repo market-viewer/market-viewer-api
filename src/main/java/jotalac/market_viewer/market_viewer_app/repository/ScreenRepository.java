@@ -9,12 +9,15 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ScreenRepository extends JpaRepository<Screen, Integer> {
     Integer countScreensByDevice(Device device);
 
     List<Screen> getScreensByDevice(Device device);
+
+    Optional<Screen> findByDeviceAndPosition(Device device, Integer position);
 
     @Modifying
     @Query("UPDATE Screen s SET s.position = s.position - 1 WHERE s.device.id = :deviceId AND s.position > :deletedPosition")
