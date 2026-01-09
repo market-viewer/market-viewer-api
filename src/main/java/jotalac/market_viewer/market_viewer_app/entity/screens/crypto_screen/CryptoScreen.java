@@ -1,29 +1,32 @@
-package jotalac.market_viewer.market_viewer_app.entity.screens;
+package jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
+import jotalac.market_viewer.market_viewer_app.entity.screens.GraphType;
+import jotalac.market_viewer.market_viewer_app.entity.screens.Screen;
+import jotalac.market_viewer.market_viewer_app.entity.screens.ScreenType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
 
 @Entity
 @DiscriminatorValue("CRYPTO")
 @Getter
 @Setter
 @NoArgsConstructor
-public class CryptoScreen extends Screen{
+public class CryptoScreen extends Screen {
+
+    // list of all asset names - /coins/list
+    @Column(nullable = false)
+    @NotBlank
+    private String assetName = "bitcoin";
 
     @Column(nullable = false)
     @NotBlank
-    private String assetName = "BTC";
+    private CryptoTimeFrame timeFrame = CryptoTimeFrame.DAY;
 
-    @Column(nullable = false)
-    @NotBlank
-    private String timeFrame = "7D";
-
+    // list all vs_currencies - /simple/supported_vs_currencies
     @Column(nullable = false)
     @NotBlank
     private String currency = "USD";
@@ -33,7 +36,7 @@ public class CryptoScreen extends Screen{
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private GraphType  graphType = GraphType.LINE;
+    private GraphType graphType = GraphType.LINE;
 
     @Column(nullable = false)
     private Boolean simpleDisplay = false;

@@ -6,11 +6,11 @@ import jotalac.market_viewer.market_viewer_app.dto.screen_data.ScreenDataDto;
 import jotalac.market_viewer.market_viewer_app.dto.screen_data.ScreenDataDtoMapper;
 import jotalac.market_viewer.market_viewer_app.entity.Device;
 import jotalac.market_viewer.market_viewer_app.entity.screens.*;
+import jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen.CryptoScreen;
 import jotalac.market_viewer.market_viewer_app.exception.NotFoundException;
 import jotalac.market_viewer.market_viewer_app.repository.DeviceRepository;
 import jotalac.market_viewer.market_viewer_app.repository.ScreenRepository;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -56,19 +56,19 @@ public class HardwareService {
 
         if (screen instanceof AITextScreen aiTextScreen) {
             if (aiTextScreen.getDisplayText().isEmpty()) {
-                screenUpdateService.updateAiTextScreen();
+                screenUpdateService.updateAiTextScreen(aiTextScreen);
             }
             return screenDataDtoMapper.toAITextDto(aiTextScreen);
         }
         if (screen instanceof CryptoScreen cryptoScreen) {
-            if (shouldFetchNewData(cryptoScreen.getPriceData().getFetchTime())) {
-                screenUpdateService.updateCryptoScreen();
+            if (shouldFetchNewData(cryptoScreen.getPriceData().getFetchTimePrice())) {
+                screenUpdateService.updateCryptoScreen(cryptoScreen);
             }
             return screenDataDtoMapper.toCryptoDto(cryptoScreen.getPriceData());
         }
         if (screen instanceof StockScreen stockScreen) {
             if (shouldFetchNewData(stockScreen.getPriceData().getFetchTime())) {
-                screenUpdateService.updateStockScreen();
+                screenUpdateService.updateStockScreen(stockScreen);
             }
             return screenDataDtoMapper.toStockDto(stockScreen.getPriceData());
         }

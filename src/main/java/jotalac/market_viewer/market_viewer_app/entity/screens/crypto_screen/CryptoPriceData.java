@@ -1,4 +1,4 @@
-package jotalac.market_viewer.market_viewer_app.entity.screens;
+package jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -29,5 +29,8 @@ public class CryptoPriceData extends AbstractEntity {
     private List<Double> graphData;
 
     @Column
-    private LocalDateTime fetchTime;
+    private LocalDateTime fetchTimePrice;
+
+    @Column
+    private LocalDateTime fetchTimeGraph;
 }

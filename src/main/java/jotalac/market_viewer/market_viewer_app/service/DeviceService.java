@@ -5,6 +5,7 @@ import jotalac.market_viewer.market_viewer_app.dto.device.DeviceCreateRequest;
 import jotalac.market_viewer.market_viewer_app.dto.device.DeviceCreateResponse;
 import jotalac.market_viewer.market_viewer_app.dto.screen.ScreenDto;
 import jotalac.market_viewer.market_viewer_app.dto.screen.ScreenDtoMapper;
+import jotalac.market_viewer.market_viewer_app.entity.ApiKeyProvider;
 import jotalac.market_viewer.market_viewer_app.entity.Device;
 import jotalac.market_viewer.market_viewer_app.entity.User;
 import jotalac.market_viewer.market_viewer_app.entity.screens.*;
@@ -12,6 +13,8 @@ import jotalac.market_viewer.market_viewer_app.exception.AlreadyExistsException;
 import jotalac.market_viewer.market_viewer_app.exception.NotFoundException;
 import jotalac.market_viewer.market_viewer_app.exception.device.DeviceScreenLimitExceeded;
 import jotalac.market_viewer.market_viewer_app.exception.screen.ScreenDoesntBelongToDeviceException;
+import jotalac.market_viewer.market_viewer_app.exception.user.MissingApiKey;
+import jotalac.market_viewer.market_viewer_app.repository.ApiKeyRepository;
 import jotalac.market_viewer.market_viewer_app.repository.DeviceRepository;
 import jotalac.market_viewer.market_viewer_app.repository.ScreenRepository;
 import jotalac.market_viewer.market_viewer_app.repository.UserRepository;
@@ -31,6 +34,16 @@ public class DeviceService {
     private final ScreenRepository screenRepository;
     private final UserService userService;
     private final ScreenDtoMapper screenDtoMapper;
+    private final ApiKeyRepository apiKeyRepository;
+
+    private Boolean userHasRequiredApiKeys(User user, ScreenType screenType) {
+        return switch (screenType) {
+            case CRYPTO -> apiKeyRepository.existsByEndpointAndUser(ApiKeyProvider.COINGECKO, user);
+            case STOCK -> apiKeyRepository.existsByEndpointAndUser(ApiKeyProvider.FINNHUB, user);
+            case AI_TEXT -> apiKeyRepository.existsByEndpointAndUser(ApiKeyProvider.GEMINI, user);
+            default -> true;
+        };
+    }
 
     @Transactional
     public DeviceCreateResponse createDevice(DeviceCreateRequest deviceCreateRequest, String username) {
@@ -67,14 +80,10 @@ public class DeviceService {
         if (deviceScreenCount >= DEVICE_MAX_SCREENS) {
             throw new DeviceScreenLimitExceeded("Screen limit exceeded");
         }
-//
-//        Screen newScreen = switch (screenType) {
-//            case CRYPTO -> new CryptoScreen();
-//            case STOCK ->  new StockScreen();
-//            case CLOCK ->  new ClockScreen();
-//            case AI_TEXT -> new AITextScreen();
-//            default -> throw new IllegalArgumentException("Invalid screen type");
-//        };
+
+        if (!userHasRequiredApiKeys(user, screenDto.getScreenType())) {
+            throw new MissingApiKey("Missing required api key for: " + screenDto.getScreenType());
+        }
 
         Screen newScreen = screenDtoMapper.toEntity(screenDto);
 
