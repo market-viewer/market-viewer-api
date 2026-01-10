@@ -19,8 +19,6 @@ public interface ScreenDtoMapper {
 
     List<ScreenDto> toDtos(List<Screen> screens);
 
-
-
     AITextScreenDto toAITextDto(AITextScreen screen);
     ClockScreenDto toClockDto(ClockScreen screen);
     CryptoScreenDto toCryptoDto(CryptoScreen screen);

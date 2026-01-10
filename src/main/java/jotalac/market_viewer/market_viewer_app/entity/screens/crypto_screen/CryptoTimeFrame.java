@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum CryptoTimeFrame {
     HOUR("1h"),
-    DAY("30h"),
+    DAY("24h"),
     WEEK("7d"),
     TWO_WEEKS("14d"),
     MONTH("30d"),

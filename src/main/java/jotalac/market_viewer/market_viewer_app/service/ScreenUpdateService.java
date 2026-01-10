@@ -1,5 +1,6 @@
 package jotalac.market_viewer.market_viewer_app.service;
 
+import jotalac.market_viewer.market_viewer_app.dto.api_response.coingecko.CoinGeckoPriceResponse;
 import jotalac.market_viewer.market_viewer_app.entity.ApiKey;
 import jotalac.market_viewer.market_viewer_app.entity.ApiKeyProvider;
 import jotalac.market_viewer.market_viewer_app.entity.screens.AITextScreen;
@@ -30,26 +31,34 @@ public class ScreenUpdateService {
 
 
     public void updateCryptoScreen(CryptoScreen cryptoScreen) {
-        verifyUserHasApiKey(cryptoScreen, ApiKeyProvider.COINGECKO);
         ApiKey userApiKey = apiKeyRepository.findByEndpointAndUser(ApiKeyProvider.COINGECKO, cryptoScreen.getDevice().getUser())
                 .orElseThrow(() -> new MissingApiKey("Missing api key"));
 
-        CryptoPriceData newData = cryptoDataProvider.fetchCryptoPriceData(
+        CoinGeckoPriceResponse newData = cryptoDataProvider.fetchCryptoPriceData(
                 cryptoScreen.getCurrency(), cryptoScreen.getAssetName(), cryptoScreen.getTimeFrame(), userApiKey.getValue()
         );
-        //check if we need to fetch graph data
-        if (cryptoScreen.getPriceData().getFetchTimeGraph()
-                .plusMinutes(GRAPH_DATA_LIFETIME_MINUTES)
-                .isBefore(LocalDateTime.now()) && cryptoScreen.getDisplayGraph())
-        {
-            newData.setGraphData(cryptoDataProvider.fetchCryptoGraphData("yoyoy"));
-        }
 
         //set the data
+        cryptoScreen.getPriceData().setFetchTimePrice(LocalDateTime.now());
+        cryptoScreen.getPriceData().setPrice(newData.getPrice());
+        cryptoScreen.getPriceData().setPriceChange(newData.getPriceChange());
+        cryptoScreen.getPriceData().setAllTimeHigh(newData.getAllTimeHigh());
+        cryptoScreen.getPriceData().setAllTimeHighChange(newData.getAllTimeHighChange());
+
+        //check if we need to fetch graph data
+//        if (cryptoScreen.getPriceData().getFetchTimeGraph()
+//                .plusMinutes(GRAPH_DATA_LIFETIME_MINUTES)
+//                .isBefore(LocalDateTime.now()) && cryptoScreen.getDisplayGraph())
+//        {
+////            newData.setGraphData(cryptoDataProvider.fetchCryptoGraphData("yoyoy"));
+//        }
+
+
+
     }
 
     public void updateStockScreen(StockScreen stockScreen) {
-        verifyUserHasApiKey(stockScreen, ApiKeyProvider.FINNHUB);
+//        verifyUserHasApiKey(stockScreen, ApiKeyProvider.FINNHUB);
 
         return;
     }

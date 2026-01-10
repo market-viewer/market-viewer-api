@@ -2,6 +2,7 @@ package jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jotalac.market_viewer.market_viewer_app.entity.screens.GraphType;
 import jotalac.market_viewer.market_viewer_app.entity.screens.Screen;
@@ -23,7 +24,7 @@ public class CryptoScreen extends Screen {
     private String assetName = "bitcoin";
 
     @Column(nullable = false)
-    @NotBlank
+    @Enumerated(EnumType.STRING)
     private CryptoTimeFrame timeFrame = CryptoTimeFrame.DAY;
 
     // list all vs_currencies - /simple/supported_vs_currencies
