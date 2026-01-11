@@ -4,6 +4,7 @@ import jotalac.market_viewer.market_viewer_app.dto.api_response.coingecko.CoinGe
 import jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen.CryptoPriceData;
 import jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen.CryptoTimeFrame;
 import jotalac.market_viewer.market_viewer_app.exception.api_provider.ApiKeyNotValid;
+import jotalac.market_viewer.market_viewer_app.exception.api_provider.AssetNameNotValid;
 import jotalac.market_viewer.market_viewer_app.service.provider.CryptoDataProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -64,5 +65,27 @@ public class CoinGeckoCryptoProvider implements CryptoDataProvider {
                     throw new ApiKeyNotValid("API key is not valid");
                 })
                 .toBodilessEntity();
+    }
+
+    @Override
+    public void validateCoinName(String assetName, String apiKey) {
+        List<CoinGeckoPriceResponse> responseList = restClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("coins/markets")
+                        .queryParam("vs_currency", "usd")
+                        .queryParam("ids", assetName)
+                        .build())
+                .header("x-cg-demo-api-key", apiKey)
+                .retrieve()
+                //handle any error
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    throw new IllegalStateException("CoinGecko API Error [" + res.getStatusCode() + "]: " + res.getBody());
+                })
+                .body(new ParameterizedTypeReference<List<CoinGeckoPriceResponse>>() {
+                });
+
+        if (responseList == null || responseList.isEmpty()) {
+            throw new AssetNameNotValid("Asset name " + assetName + " not found");
+        }
     }
 }

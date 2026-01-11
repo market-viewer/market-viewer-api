@@ -20,7 +20,7 @@ public class CryptoScreenDto extends ScreenDto {
 
     @Size(min = 1, max = 255)
     private String assetName;
-    @NotNull(message = "Invalid time frame")
+//    @NotNull(message = "Invalid time frame")
     private CryptoTimeFrame timeFrame;
     private String currency;
     private Boolean displayGraph;

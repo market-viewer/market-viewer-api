@@ -14,4 +14,6 @@ public interface CryptoDataProvider {
 
     void validateApiKey(String apiKey);
 
+    void validateCoinName(String assetName, String apiKey);
+
 }
