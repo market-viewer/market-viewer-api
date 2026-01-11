@@ -2,10 +2,13 @@ package jotalac.market_viewer.market_viewer_app.dto.screen;
 
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jotalac.market_viewer.market_viewer_app.entity.screens.GraphType;
 import jotalac.market_viewer.market_viewer_app.entity.screens.ScreenType;
+import jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen.CryptoTimeFrame;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,8 +20,8 @@ public class CryptoScreenDto extends ScreenDto {
 
     @Size(min = 1, max = 255)
     private String assetName;
-    // will need to create some enum that have all the valid time frames
-    private String timeFrame;
+    @NotNull(message = "Invalid time frame")
+    private CryptoTimeFrame timeFrame;
     private String currency;
     private Boolean displayGraph;
     private GraphType graphType;

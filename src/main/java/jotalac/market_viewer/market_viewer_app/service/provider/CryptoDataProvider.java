@@ -12,6 +12,6 @@ public interface CryptoDataProvider {
 
     List<Double> fetchCryptoGraphData(String something);
 
-    Boolean validateApiKey(String apiKey);
+    void validateApiKey(String apiKey);
 
 }

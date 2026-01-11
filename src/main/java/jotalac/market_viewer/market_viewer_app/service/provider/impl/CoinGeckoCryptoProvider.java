@@ -3,6 +3,7 @@ package jotalac.market_viewer.market_viewer_app.service.provider.impl;
 import jotalac.market_viewer.market_viewer_app.dto.api_response.coingecko.CoinGeckoPriceResponse;
 import jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen.CryptoPriceData;
 import jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen.CryptoTimeFrame;
+import jotalac.market_viewer.market_viewer_app.exception.api_provider.ApiKeyNotValid;
 import jotalac.market_viewer.market_viewer_app.service.provider.CryptoDataProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -54,7 +55,14 @@ public class CoinGeckoCryptoProvider implements CryptoDataProvider {
     }
 
     @Override
-    public Boolean validateApiKey(String apiKey) {
-        return null;
+    public void validateApiKey(String apiKey) {
+        restClient.get()
+                .uri("ping")
+                .header("x-cg-demo-api-key", apiKey)
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    throw new ApiKeyNotValid("API key is not valid");
+                })
+                .toBodilessEntity();
     }
 }

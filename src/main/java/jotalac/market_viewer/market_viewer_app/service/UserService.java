@@ -14,11 +14,13 @@ import jotalac.market_viewer.market_viewer_app.exception.NotFoundException;
 import jotalac.market_viewer.market_viewer_app.exception.user.UserAlreadyExistsException;
 import jotalac.market_viewer.market_viewer_app.repository.ApiKeyRepository;
 import jotalac.market_viewer.market_viewer_app.repository.UserRepository;
+import jotalac.market_viewer.market_viewer_app.service.provider.CryptoDataProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +31,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final ApiKeyRepository apiKeyRepository;
     private final ApiKeyDtoMapper apiKeyDtoMapper;
+    private final CryptoDataProvider cryptoDataProvider;
 
     @Transactional
     public UserDto createUser(UserCreateDto userCreateDto) {
@@ -43,15 +46,25 @@ public class UserService {
     }
 
     @Transactional
-    public void saveUserApiKey(ApiKeyCreateDto apiKeyCreateDto, Integer userId) {
+    public boolean saveUserApiKey(ApiKeyCreateDto apiKeyCreateDto, Integer userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+
+        AtomicBoolean keyCreated = new AtomicBoolean(false);
 
         ApiKey apiKey = apiKeyRepository
                 .findByEndpointAndUser(apiKeyCreateDto.endpoint(), user)
-                .orElseGet(() -> new ApiKey(apiKeyCreateDto.keyValue(), apiKeyCreateDto.endpoint(), user));
+                .orElseGet(() -> {
+                    keyCreated.set(true);
+                    return new ApiKey(apiKeyCreateDto.keyValue(), apiKeyCreateDto.endpoint(), user);
+                });
+
+        //validate if the key is valid
+        cryptoDataProvider.validateApiKey(apiKeyCreateDto.keyValue());
 
         apiKey.setValue(apiKeyCreateDto.keyValue());
         apiKeyRepository.save(apiKey);
+
+        return keyCreated.get();
     }
 
     @Transactional

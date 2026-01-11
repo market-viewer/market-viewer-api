@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jotalac.market_viewer.market_viewer_app.dto.ErrorResponse;
 import jotalac.market_viewer.market_viewer_app.exception.AlreadyExistsException;
 import jotalac.market_viewer.market_viewer_app.exception.NotFoundException;
+import jotalac.market_viewer.market_viewer_app.exception.api_provider.ApiProviderException;
 import jotalac.market_viewer.market_viewer_app.exception.device.DeviceException;
 import jotalac.market_viewer.market_viewer_app.exception.screen.ScreenException;
 import jotalac.market_viewer.market_viewer_app.exception.user.UserException;
@@ -60,6 +61,12 @@ public class RestExceptionHandler {
     @ExceptionHandler(UserException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse userException(HttpServletRequest request, UserException e) {
+        return new ErrorResponse(LocalDateTime.now(), e.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(ApiProviderException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse apiProviderException(HttpServletRequest request, ApiProviderException e) {
         return new ErrorResponse(LocalDateTime.now(), e.getMessage(), request.getRequestURI());
     }
 

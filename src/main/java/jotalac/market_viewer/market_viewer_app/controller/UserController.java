@@ -24,8 +24,13 @@ public class UserController {
 
     @PostMapping("/{userId}/apiKey")
     public ResponseEntity<MessageResponse> addApiKey(@PathVariable Integer userId, @Valid @RequestBody ApiKeyCreateDto apiKeyCreateDto) {
-        userService.saveUserApiKey(apiKeyCreateDto, userId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new MessageResponse("API key added"));
+        boolean created = userService.saveUserApiKey(apiKeyCreateDto, userId);
+
+        if (created) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(new MessageResponse("API key added"));
+        } else  {
+            return ResponseEntity.ok(new MessageResponse("API key updated"));
+        }
     }
 
     @GetMapping("/{userId}/apiKey")
