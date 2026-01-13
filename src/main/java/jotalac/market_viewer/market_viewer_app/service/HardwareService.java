@@ -34,7 +34,7 @@ public class HardwareService {
                 .orElseThrow(() -> new NotFoundException("Device with hash " + deviceHash + " not found"));
     }
 
-    private Boolean shouldFetchNewData(LocalDateTime lastFetchTime) {
+    private Boolean shouldFetchNewPriceData(LocalDateTime lastFetchTime) {
         if (lastFetchTime == null) {
             return true;
         }
@@ -57,18 +57,21 @@ public class HardwareService {
         if (screen instanceof AITextScreen aiTextScreen) {
             if (aiTextScreen.getDisplayText().isEmpty()) {
                 screenUpdateService.updateAiTextScreen(aiTextScreen);
+                screenRepository.save(aiTextScreen);
             }
             return screenDataDtoMapper.toAITextDto(aiTextScreen);
         }
         if (screen instanceof CryptoScreen cryptoScreen) {
-            if (shouldFetchNewData(cryptoScreen.getPriceData().getFetchTimePrice())) {
+            if (shouldFetchNewPriceData(cryptoScreen.getPriceData().getFetchTimePrice())) {
                 screenUpdateService.updateCryptoScreen(cryptoScreen);
+                screenRepository.save(cryptoScreen);
             }
             return screenDataDtoMapper.toCryptoDto(cryptoScreen.getPriceData());
         }
         if (screen instanceof StockScreen stockScreen) {
-            if (shouldFetchNewData(stockScreen.getPriceData().getFetchTime())) {
+            if (shouldFetchNewPriceData(stockScreen.getPriceData().getFetchTime())) {
                 screenUpdateService.updateStockScreen(stockScreen);
+                screenRepository.save(stockScreen);
             }
             return screenDataDtoMapper.toStockDto(stockScreen.getPriceData());
         }

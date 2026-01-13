@@ -21,4 +21,6 @@ public final class Constants {
     public static final Integer PRICE_DATA_LIFETIME_MINUTES = 3;
     public static final Integer GRAPH_DATA_LIFETIME_MINUTES = 30;
 
+    public static final Integer PRICE_GRAPH_POINTS = 90;
+
 }

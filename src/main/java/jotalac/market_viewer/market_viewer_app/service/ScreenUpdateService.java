@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static jotalac.market_viewer.market_viewer_app.config.Constants.GRAPH_DATA_LIFETIME_MINUTES;
 
@@ -46,14 +47,22 @@ public class ScreenUpdateService {
         cryptoScreen.getPriceData().setAllTimeHighChange(newData.getAllTimeHighChange());
 
         //check if we need to fetch graph data
-//        if (cryptoScreen.getPriceData().getFetchTimeGraph()
-//                .plusMinutes(GRAPH_DATA_LIFETIME_MINUTES)
-//                .isBefore(LocalDateTime.now()) && cryptoScreen.getDisplayGraph())
-//        {
-////            newData.setGraphData(cryptoDataProvider.fetchCryptoGraphData("yoyoy"));
-//        }
+        LocalDateTime lastGraphFetchTime = cryptoScreen.getPriceData().getFetchTimeGraph();
+        if (
+                lastGraphFetchTime == null ||
+                (cryptoScreen.getPriceData().getFetchTimeGraph()
+                    .plusMinutes(GRAPH_DATA_LIFETIME_MINUTES)
+                    .isBefore(LocalDateTime.now()) &&
+                cryptoScreen.getDisplayGraph())
+        )
+        {
+            List<Double> newGraphData = cryptoDataProvider.fetchCryptoGraphData(
+                    cryptoScreen.getCurrency(), cryptoScreen.getAssetName(), cryptoScreen.getTimeFrame(), userApiKey.getValue()
+            );
 
-
+            cryptoScreen.getPriceData().setGraphData(newGraphData);
+            cryptoScreen.getPriceData().setFetchTimeGraph(LocalDateTime.now());
+        }
 
     }
 

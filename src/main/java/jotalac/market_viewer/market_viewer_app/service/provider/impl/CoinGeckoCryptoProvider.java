@@ -3,6 +3,7 @@ package jotalac.market_viewer.market_viewer_app.service.provider.impl;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Expiry;
+import jotalac.market_viewer.market_viewer_app.dto.api_response.coingecko.CoinGeckoGraphResponse;
 import jotalac.market_viewer.market_viewer_app.dto.api_response.coingecko.CoinGeckoPriceResponse;
 import jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen.CryptoPriceData;
 import jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen.CryptoTimeFrame;
@@ -55,6 +56,9 @@ public class CoinGeckoCryptoProvider implements CryptoDataProvider {
                 })
                 .body(new ParameterizedTypeReference<List<CoinGeckoPriceResponse>>() {});
 
+        log.info("Fetching price data for: {}", assetName);
+
+
         if (responseList == null || responseList.isEmpty()) {
             throw new IllegalStateException("No data found for " + assetName);
         }
@@ -63,8 +67,30 @@ public class CoinGeckoCryptoProvider implements CryptoDataProvider {
     }
 
     @Override
-    public List<Double> fetchCryptoGraphData(String something) {
-        return List.of();
+    public List<Double> fetchCryptoGraphData(String currency, String assetName, CryptoTimeFrame timeFrame, String apiKey) {
+        CoinGeckoGraphResponse response = restClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/coins/{id}/market_chart")
+                        .queryParam("vs_currency", currency)
+                        .queryParam("days", timeFrame.convertToDays())
+                        .build(assetName))
+                .header("x-cg-demo-api-key", apiKey)
+                .retrieve()
+                //handle any error
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    String responseBody = new String(res.getBody().readAllBytes(), StandardCharsets.UTF_8);
+                    throw new IllegalStateException("CoinGecko API Error [" + res.getStatusCode() + "]: " + responseBody);
+                })
+                .body(CoinGeckoGraphResponse.class);
+
+        log.info("Fetching graph data for: {}", assetName);
+
+
+        if (response == null) {
+            throw new IllegalStateException("No graph data found for " + assetName);
+        }
+
+        return response.getReducedPrices();
     }
 
     @Override

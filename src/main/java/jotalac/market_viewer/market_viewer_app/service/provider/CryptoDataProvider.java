@@ -10,7 +10,7 @@ public interface CryptoDataProvider {
 
     CoinGeckoPriceResponse fetchCryptoPriceData(String currency, String assetName, CryptoTimeFrame timeFrame, String apiKey);
 
-    List<Double> fetchCryptoGraphData(String something);
+    List<Double> fetchCryptoGraphData(String currency, String assetName, CryptoTimeFrame timeFrame, String apiKey);
 
     void validateApiKey(String apiKey);
 

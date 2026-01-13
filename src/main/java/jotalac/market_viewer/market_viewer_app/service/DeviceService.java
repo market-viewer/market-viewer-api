@@ -117,6 +117,7 @@ public class DeviceService {
         return screenDtoMapper.toDto(newScreen);
     }
 
+    //TODO delete the last fetch time on screen when updating the screen data
     @Transactional
     public ScreenDto updateScreen(Integer deviceId, Integer screenId, ScreenDto screenDto, String username) {
         User user = userRepository.findByUsername(username);

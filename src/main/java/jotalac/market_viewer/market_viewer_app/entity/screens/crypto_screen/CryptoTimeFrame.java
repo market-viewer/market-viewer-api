@@ -32,4 +32,16 @@ public enum CryptoTimeFrame {
         }
         return null;
     }
+
+    public Integer convertToDays() {
+        return switch (fromValue(value)) {
+            case HOUR, DAY -> 1;
+            case WEEK -> 7;
+            case TWO_WEEKS -> 14;
+            case MONTH -> 30;
+            case TWO_HUNDRED_DAYS -> 200;
+            case YEAR -> 365;
+            case null -> 1;
+        };
+    }
 }
