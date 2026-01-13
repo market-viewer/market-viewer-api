@@ -1,5 +1,8 @@
 package jotalac.market_viewer.market_viewer_app.service.provider.impl;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Expiry;
 import jotalac.market_viewer.market_viewer_app.dto.api_response.coingecko.CoinGeckoPriceResponse;
 import jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen.CryptoPriceData;
 import jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen.CryptoTimeFrame;
@@ -7,6 +10,7 @@ import jotalac.market_viewer.market_viewer_app.exception.api_provider.ApiKeyNotV
 import jotalac.market_viewer.market_viewer_app.exception.api_provider.AssetNameNotValid;
 import jotalac.market_viewer.market_viewer_app.service.provider.CryptoDataProvider;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatusCode;
@@ -14,13 +18,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
+@Slf4j
 @Service
 public class CoinGeckoCryptoProvider implements CryptoDataProvider {
     CoinGeckoCryptoProvider(@Qualifier("coingeckoClient") RestClient restClient) {this.restClient = restClient;}
 
     private final RestClient restClient;
+
+    //caching valid coin names
+    private final Cache<String, Boolean> validCoinNames = Caffeine.newBuilder()
+            .maximumSize(20_000)
+            .expireAfterWrite(Duration.ofDays(30))
+            .build();
 
     @Override
     public CoinGeckoPriceResponse fetchCryptoPriceData(String currency, String assetName, CryptoTimeFrame timeFrame, String apiKey) {
@@ -29,17 +43,15 @@ public class CoinGeckoCryptoProvider implements CryptoDataProvider {
                         .path("coins/markets")
                         .queryParam("vs_currency", currency)
                         .queryParam("ids", assetName)
-//                        .queryParam("price_change_percentage", timeFrame.getValue())
-                        .queryParam("price_change_percentage", "24h")
+                        .queryParam("price_change_percentage", timeFrame.getValue())
+//                        .queryParam("price_change_percentage", "24h")
                         .build())
                 .header("x-cg-demo-api-key", apiKey)
                 .retrieve()
                 //handle any error
                 .onStatus(HttpStatusCode::isError, (req, res) -> {
-                    // Start: Better error handling
                     String responseBody = new String(res.getBody().readAllBytes(), StandardCharsets.UTF_8);
                     throw new IllegalStateException("CoinGecko API Error [" + res.getStatusCode() + "]: " + responseBody);
-                    // End: Better error handling
                 })
                 .body(new ParameterizedTypeReference<List<CoinGeckoPriceResponse>>() {});
 
@@ -69,6 +81,14 @@ public class CoinGeckoCryptoProvider implements CryptoDataProvider {
 
     @Override
     public void validateCoinName(String assetName, String apiKey) {
+        // check coin name from cache
+        validCoinNames.get(assetName, name -> {
+            performCoinValidation(name, apiKey);
+            return true;
+        });
+    }
+
+    private void performCoinValidation(String assetName, String apiKey) {
         List<CoinGeckoPriceResponse> responseList = restClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("coins/markets")
@@ -81,11 +101,13 @@ public class CoinGeckoCryptoProvider implements CryptoDataProvider {
                 .onStatus(HttpStatusCode::isError, (req, res) -> {
                     throw new IllegalStateException("CoinGecko API Error [" + res.getStatusCode() + "]: " + res.getBody());
                 })
-                .body(new ParameterizedTypeReference<List<CoinGeckoPriceResponse>>() {
+                .body(new ParameterizedTypeReference<>() {
                 });
 
+        log.info("Validating coin name: {}", assetName);
+
         if (responseList == null || responseList.isEmpty()) {
-            throw new AssetNameNotValid("Asset name " + assetName + " not found");
+            throw new AssetNameNotValid("Coin name '" + assetName + "' not found");
         }
     }
 }

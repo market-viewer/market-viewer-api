@@ -3,8 +3,10 @@ package jotalac.market_viewer.market_viewer_app.service;
 import jakarta.transaction.Transactional;
 import jotalac.market_viewer.market_viewer_app.dto.device.DeviceCreateRequest;
 import jotalac.market_viewer.market_viewer_app.dto.device.DeviceCreateResponse;
+import jotalac.market_viewer.market_viewer_app.dto.screen.CryptoScreenDto;
 import jotalac.market_viewer.market_viewer_app.dto.screen.ScreenDto;
 import jotalac.market_viewer.market_viewer_app.dto.screen.ScreenDtoMapper;
+import jotalac.market_viewer.market_viewer_app.dto.screen.StockScreenDto;
 import jotalac.market_viewer.market_viewer_app.entity.ApiKeyProvider;
 import jotalac.market_viewer.market_viewer_app.entity.Device;
 import jotalac.market_viewer.market_viewer_app.entity.User;
@@ -18,6 +20,7 @@ import jotalac.market_viewer.market_viewer_app.repository.ApiKeyRepository;
 import jotalac.market_viewer.market_viewer_app.repository.DeviceRepository;
 import jotalac.market_viewer.market_viewer_app.repository.ScreenRepository;
 import jotalac.market_viewer.market_viewer_app.repository.UserRepository;
+import jotalac.market_viewer.market_viewer_app.service.provider.CryptoDataProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +38,7 @@ public class DeviceService {
     private final UserService userService;
     private final ScreenDtoMapper screenDtoMapper;
     private final ApiKeyRepository apiKeyRepository;
+    private final CryptoDataProvider cryptoDataProvider;
 
     private Boolean userHasRequiredApiKeys(User user, ScreenType screenType) {
         return switch (screenType) {
@@ -43,6 +47,22 @@ public class DeviceService {
             case AI_TEXT -> apiKeyRepository.existsByEndpointAndUser(ApiKeyProvider.GEMINI, user);
             default -> true;
         };
+    }
+
+    private void validateAssetName(ScreenDto screenDto, User user) {
+        if (screenDto instanceof CryptoScreenDto cryptoScreenDto) {
+            if (cryptoScreenDto.getAssetName() == null) {return;}
+            String apiKey = apiKeyRepository.findByEndpointAndUser(ApiKeyProvider.COINGECKO, user)
+                    .orElseThrow(() -> new MissingApiKey("Missing API key for crypto data"))
+                    .getValue();
+
+            cryptoDataProvider.validateCoinName(cryptoScreenDto.getAssetName(), apiKey);
+            return;
+        }
+
+        if (screenDto instanceof StockScreenDto stockScreenDto) {
+            //TODO validate stock asset name
+        }
     }
 
     @Transactional
@@ -85,6 +105,9 @@ public class DeviceService {
             throw new MissingApiKey("Missing required api key for: " + screenDto.getScreenType());
         }
 
+        //validate the asset names if needed
+        validateAssetName(screenDto, user);
+
         Screen newScreen = screenDtoMapper.toEntity(screenDto);
 
         newScreen.setDevice(device);
@@ -106,6 +129,8 @@ public class DeviceService {
         if (!screenBelongsToDevice(screen, device)) {
             throw new ScreenDoesntBelongToDeviceException("Screen doesnt belong to this device");
         }
+
+        validateAssetName(screenDto, user);
 
         screenDtoMapper.updateEntityFromDto(screenDto, screen);
         screen = screenRepository.save(screen);

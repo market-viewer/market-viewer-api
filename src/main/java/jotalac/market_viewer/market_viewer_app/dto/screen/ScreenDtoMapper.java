@@ -2,6 +2,7 @@ package jotalac.market_viewer.market_viewer_app.dto.screen;
 
 import jotalac.market_viewer.market_viewer_app.entity.screens.*;
 import jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen.CryptoScreen;
+import jotalac.market_viewer.market_viewer_app.service.provider.CryptoDataProvider;
 import org.mapstruct.*;
 
 import java.util.List;
@@ -23,7 +24,6 @@ public interface ScreenDtoMapper {
     ClockScreenDto toClockDto(ClockScreen screen);
     CryptoScreenDto toCryptoDto(CryptoScreen screen);
     StockScreenDto toStockDto(StockScreen screen);
-
 
     default void updateEntityFromDto(ScreenDto dto, @MappingTarget Screen entity) {
         if (dto instanceof AITextScreenDto d && entity instanceof AITextScreen e) {
