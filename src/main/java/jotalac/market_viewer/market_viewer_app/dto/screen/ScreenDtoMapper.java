@@ -1,6 +1,7 @@
 package jotalac.market_viewer.market_viewer_app.dto.screen;
 
 import jotalac.market_viewer.market_viewer_app.entity.screens.*;
+import jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen.CryptoPriceData;
 import jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen.CryptoScreen;
 import jotalac.market_viewer.market_viewer_app.service.provider.CryptoDataProvider;
 import org.mapstruct.*;
@@ -32,8 +33,13 @@ public interface ScreenDtoMapper {
             updateClock(d, e);
         } else if (dto instanceof CryptoScreenDto d && entity instanceof CryptoScreen e) {
             updateCrypto(d, e);
+            //on update reset the data
+            e.setPriceData(new CryptoPriceData());
         } else if (dto instanceof StockScreenDto d && entity instanceof StockScreen e) {
             updateStock(d, e);
+            //on update reset the data
+            e.setPriceData(new StockPriceData());
+
         } else {
             throw new IllegalArgumentException("Screen update data do not match screen type");
         }

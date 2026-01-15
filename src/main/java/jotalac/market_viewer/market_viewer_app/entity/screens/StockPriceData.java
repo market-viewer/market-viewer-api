@@ -26,5 +26,8 @@ public class StockPriceData extends AbstractEntity {
     private Double closePrice;
 
     @Column
-    private LocalDateTime fetchTime;
+    private LocalDateTime fetchTimePrice;
+
+    @Column
+    private LocalDateTime fetchTimeGraph;
 }

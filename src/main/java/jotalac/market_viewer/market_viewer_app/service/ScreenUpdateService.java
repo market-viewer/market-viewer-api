@@ -14,6 +14,7 @@ import jotalac.market_viewer.market_viewer_app.service.provider.AiGenerationProv
 import jotalac.market_viewer.market_viewer_app.service.provider.CryptoDataProvider;
 import jotalac.market_viewer.market_viewer_app.service.provider.StockDataProvider;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,6 +22,7 @@ import java.util.List;
 
 import static jotalac.market_viewer.market_viewer_app.config.Constants.GRAPH_DATA_LIFETIME_MINUTES;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ScreenUpdateService {
@@ -40,28 +42,30 @@ public class ScreenUpdateService {
         );
 
         //set the data
-        cryptoScreen.getPriceData().setFetchTimePrice(LocalDateTime.now());
-        cryptoScreen.getPriceData().setPrice(newData.getPrice());
-        cryptoScreen.getPriceData().setPriceChange(newData.getPriceChange());
-        cryptoScreen.getPriceData().setAllTimeHigh(newData.getAllTimeHigh());
-        cryptoScreen.getPriceData().setAllTimeHighChange(newData.getAllTimeHighChange());
+        var cryptoScreenPriceData = cryptoScreen.getPriceData();
+        cryptoScreenPriceData.setFetchTimePrice(LocalDateTime.now());
+        cryptoScreenPriceData.setPrice(newData.getPrice());
+        cryptoScreenPriceData.setPriceChange(newData.getPriceChange());
+        cryptoScreenPriceData.setAllTimeHigh(newData.getAllTimeHigh());
+        cryptoScreenPriceData.setAllTimeHighChange(newData.getAllTimeHighChange());
 
         //check if we need to fetch graph data
-        LocalDateTime lastGraphFetchTime = cryptoScreen.getPriceData().getFetchTimeGraph();
+        LocalDateTime lastGraphFetchTime = cryptoScreenPriceData.getFetchTimeGraph();
         if (
-                lastGraphFetchTime == null ||
-                (cryptoScreen.getPriceData().getFetchTimeGraph()
+                cryptoScreen.getDisplayGraph() &&
+                (lastGraphFetchTime == null ||
+                cryptoScreenPriceData.getFetchTimeGraph()
                     .plusMinutes(GRAPH_DATA_LIFETIME_MINUTES)
-                    .isBefore(LocalDateTime.now()) &&
-                cryptoScreen.getDisplayGraph())
+                    .isBefore(LocalDateTime.now())
+                )
         )
         {
             List<Double> newGraphData = cryptoDataProvider.fetchCryptoGraphData(
                     cryptoScreen.getCurrency(), cryptoScreen.getAssetName(), cryptoScreen.getTimeFrame(), userApiKey.getValue()
             );
 
-            cryptoScreen.getPriceData().setGraphData(newGraphData);
-            cryptoScreen.getPriceData().setFetchTimeGraph(LocalDateTime.now());
+            cryptoScreenPriceData.setGraphData(newGraphData);
+            cryptoScreenPriceData.setFetchTimeGraph(LocalDateTime.now());
         }
 
     }

@@ -69,7 +69,7 @@ public class HardwareService {
             return screenDataDtoMapper.toCryptoDto(cryptoScreen.getPriceData());
         }
         if (screen instanceof StockScreen stockScreen) {
-            if (shouldFetchNewPriceData(stockScreen.getPriceData().getFetchTime())) {
+            if (shouldFetchNewPriceData(stockScreen.getPriceData().getFetchTimePrice())) {
                 screenUpdateService.updateStockScreen(stockScreen);
                 screenRepository.save(stockScreen);
             }

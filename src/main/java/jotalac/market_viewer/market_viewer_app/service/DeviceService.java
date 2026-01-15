@@ -68,11 +68,7 @@ public class DeviceService {
     @Transactional
     public DeviceCreateResponse createDevice(DeviceCreateRequest deviceCreateRequest, String username) {
 
-        User user = userRepository.findByUsername(username);
-
-        if  (user == null) {
-            throw new NotFoundException("User not found");
-        }
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
 
         //check new device name doesnt already exists
         if (deviceRepository.existsByUserIdAndName(user.getId(), deviceCreateRequest.name())) {
@@ -87,14 +83,20 @@ public class DeviceService {
     }
 
     @Transactional
-    public ScreenDto addScreen(Integer deviceId, ScreenDto screenDto, String username) {
-        Device device = deviceRepository.findById(deviceId).orElseThrow(() -> new NotFoundException("Device with id - " + deviceId + " not found"));
-        User user = userRepository.findByUsername(username);
-        if  (user == null) {
-            throw new NotFoundException("User not found");
-        }
+    public void deleteDevice(Integer deviceId, String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
+        Device device = deviceRepository.findByIdAndUser(deviceId, user).orElseThrow(() -> new NotFoundException("Device not found"));
 
-        deviceBelongsToUser(device, user);
+        // delete all screens depending on the device
+        screenRepository.deleteByDevice(device);
+
+        deviceRepository.delete(device);
+    }
+
+    @Transactional
+    public ScreenDto addScreen(Integer deviceId, ScreenDto screenDto, String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
+        Device device = deviceRepository.findByIdAndUser(deviceId, user).orElseThrow(() -> new NotFoundException("Device with id - " + deviceId + " not found"));
 
         Integer deviceScreenCount = screenRepository.countScreensByDevice(device);
         if (deviceScreenCount >= DEVICE_MAX_SCREENS) {
@@ -120,11 +122,8 @@ public class DeviceService {
     //TODO delete the last fetch time on screen when updating the screen data
     @Transactional
     public ScreenDto updateScreen(Integer deviceId, Integer screenId, ScreenDto screenDto, String username) {
-        User user = userRepository.findByUsername(username);
-        if (user == null) throw new NotFoundException("User not found");
-        Device device = deviceRepository.findById(deviceId).orElseThrow(() -> new NotFoundException("Device not found"));
-
-        deviceBelongsToUser(device, user);
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
+        Device device = deviceRepository.findByIdAndUser(deviceId, user).orElseThrow(() -> new NotFoundException("Device not found"));
 
         Screen screen = screenRepository.findById(screenId).orElseThrow(() -> new NotFoundException("Screen not found"));
         if (!screenBelongsToDevice(screen, device)) {
@@ -142,13 +141,8 @@ public class DeviceService {
 
     @Transactional
     public void removeScreen(Integer deviceId, Integer screenId, String username) {
-        User user  = userRepository.findByUsername(username);
-        if (user == null) {
-            throw new NotFoundException("User not found");
-        }
-
-        Device device = deviceRepository.findById(deviceId).orElseThrow(() -> new NotFoundException("Device with id - " + deviceId + " not found"));
-        deviceBelongsToUser(device, user);
+        User user  = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
+        Device device = deviceRepository.findByIdAndUser(deviceId, user).orElseThrow(() -> new NotFoundException("Device with id - " + deviceId + " not found"));
 
         Screen screen = screenRepository.findById(screenId).orElseThrow(() -> new NotFoundException("Screen with id - " + screenId + " not found"));
 
@@ -161,25 +155,14 @@ public class DeviceService {
         return screenRepository.countScreensByDevice(device) < DEVICE_MAX_SCREENS;
     }
 
-    private void deviceBelongsToUser(Device device, User user) {
-        if (!device.getUser().getUsername().equals(user.getUsername())) {
-            throw new IllegalStateException("User doesn't own this device");
-        }
-    }
-
     private Boolean screenBelongsToDevice(Screen screen, Device device) {
         return screen.getDevice().getId().equals(device.getId());
     }
 
     @Transactional
     public List<ScreenDto> getAllScreensForDevice(Integer deviceId, String username) {
-        Device device = deviceRepository.findById(deviceId).orElseThrow(() -> new NotFoundException("Device not found"));
-
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            throw new NotFoundException("User not found");
-        }
-        deviceBelongsToUser(device, user);
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
+        Device device = deviceRepository.findByIdAndUser(deviceId, user).orElseThrow(() -> new NotFoundException("Device not found"));
 
         List<Screen> deviceScreens = screenRepository.getScreensByDevice(device);
 

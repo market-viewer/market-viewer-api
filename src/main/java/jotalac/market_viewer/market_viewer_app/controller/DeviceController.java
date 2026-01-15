@@ -6,6 +6,7 @@ import jotalac.market_viewer.market_viewer_app.dto.device.DeviceCreateRequest;
 import jotalac.market_viewer.market_viewer_app.dto.device.DeviceCreateResponse;
 import jotalac.market_viewer.market_viewer_app.dto.screen.ScreenDto;
 import jotalac.market_viewer.market_viewer_app.service.DeviceService;
+import org.aspectj.bridge.Message;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,6 +29,18 @@ public class DeviceController {
     public ResponseEntity<DeviceCreateResponse> createDevice(@Valid @RequestBody DeviceCreateRequest deviceCreateRequest) {
         DeviceCreateResponse deviceCreateResponse = deviceService.createDevice(deviceCreateRequest, "test");
         return ResponseEntity.status(HttpStatus.CREATED).body(deviceCreateResponse);
+    }
+
+    @DeleteMapping("{deviceId}")
+    public ResponseEntity<String> removeDevice(@PathVariable Integer deviceId) {
+        deviceService.deleteDevice(deviceId, "test");
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    // TODO list user devices
+    @GetMapping()
+    public Object listUserDevices(Principal principal) {
+        return null;
     }
 
     @PostMapping("/{deviceId}/screen")

@@ -14,10 +14,9 @@ import java.util.Optional;
 @Repository
 public interface ScreenRepository extends JpaRepository<Screen, Integer> {
     Integer countScreensByDevice(Device device);
-
     List<Screen> getScreensByDevice(Device device);
-
     Optional<Screen> findByDeviceAndPosition(Device device, Integer position);
+    void deleteByDevice(Device device);
 
     @Modifying
     @Query("UPDATE Screen s SET s.position = s.position - 1 WHERE s.device.id = :deviceId AND s.position > :deletedPosition")
