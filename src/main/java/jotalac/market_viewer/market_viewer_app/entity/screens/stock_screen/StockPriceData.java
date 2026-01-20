@@ -1,4 +1,4 @@
-package jotalac.market_viewer.market_viewer_app.entity.screens;
+package jotalac.market_viewer.market_viewer_app.entity.screens.stock_screen;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -7,11 +7,18 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
 @Setter
 public class StockPriceData extends AbstractEntity {
+
+    @Column
+    private String name;
+
+    @Column
+    private String currency;
 
     @Column
     private Double price;
@@ -20,10 +27,7 @@ public class StockPriceData extends AbstractEntity {
     private Double priceChange;
 
     @Column
-    private Double openPrice;
-
-    @Column
-    private Double closePrice;
+    private List<Double> graphData;
 
     @Column
     private LocalDateTime fetchTimePrice;
