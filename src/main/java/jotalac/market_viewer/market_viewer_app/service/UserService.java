@@ -15,6 +15,7 @@ import jotalac.market_viewer.market_viewer_app.exception.user.UserAlreadyExistsE
 import jotalac.market_viewer.market_viewer_app.repository.ApiKeyRepository;
 import jotalac.market_viewer.market_viewer_app.repository.UserRepository;
 import jotalac.market_viewer.market_viewer_app.service.provider.CryptoDataProvider;
+import jotalac.market_viewer.market_viewer_app.service.provider.StockDataProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ public class UserService {
     private final ApiKeyRepository apiKeyRepository;
     private final ApiKeyDtoMapper apiKeyDtoMapper;
     private final CryptoDataProvider cryptoDataProvider;
+    private final StockDataProvider stockDataProvider;
 
     @Transactional
     public UserDto createUser(UserCreateDto userCreateDto) {
@@ -49,17 +51,16 @@ public class UserService {
     public boolean saveUserApiKey(ApiKeyCreateDto apiKeyCreateDto, Integer userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
 
-        AtomicBoolean keyCreated = new AtomicBoolean(false);
+        //validate if the key is valid
+        validateApiKey(apiKeyCreateDto);
 
+        AtomicBoolean keyCreated = new AtomicBoolean(false);
         ApiKey apiKey = apiKeyRepository
                 .findByEndpointAndUser(apiKeyCreateDto.endpoint(), user)
                 .orElseGet(() -> {
                     keyCreated.set(true);
                     return new ApiKey(apiKeyCreateDto.keyValue(), apiKeyCreateDto.endpoint(), user);
                 });
-
-        //validate if the key is valid
-        cryptoDataProvider.validateApiKey(apiKeyCreateDto.keyValue());
 
         apiKey.setValue(apiKeyCreateDto.keyValue());
         apiKeyRepository.save(apiKey);
@@ -95,6 +96,21 @@ public class UserService {
             throw new UserAlreadyExistsException("User with email : " + email + " already exists");
         }
     }
+
+    private void validateApiKey(ApiKeyCreateDto apiKeyCreateDto) {
+        switch (apiKeyCreateDto.endpoint()) {
+            case COINGECKO -> {
+                cryptoDataProvider.validateApiKey(apiKeyCreateDto.keyValue());
+            }
+            case TWELVE_DATA -> {
+                stockDataProvider.validateApiKey(apiKeyCreateDto.keyValue());
+            }
+            case GEMINI -> {
+                //TODO validate gemini api key
+            }
+        }
+    }
+
 
 
 

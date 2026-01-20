@@ -15,8 +15,8 @@ public class RestClientConfig {
     }
 
     @Bean
-    @Qualifier("finhubClient")
-    public RestClient finhubClient(RestClient.Builder builder) {
-        return builder.baseUrl("https://some_finhub_endpoint").build();
+    @Qualifier("twelveDataClient")
+    public RestClient twelveDataClient(RestClient.Builder builder) {
+        return builder.baseUrl("https://api.twelvedata.com/").build();
     }
 }

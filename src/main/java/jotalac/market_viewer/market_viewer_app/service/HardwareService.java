@@ -7,6 +7,7 @@ import jotalac.market_viewer.market_viewer_app.dto.screen_data.ScreenDataDtoMapp
 import jotalac.market_viewer.market_viewer_app.entity.Device;
 import jotalac.market_viewer.market_viewer_app.entity.screens.*;
 import jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen.CryptoScreen;
+import jotalac.market_viewer.market_viewer_app.entity.screens.stock_screen.StockScreen;
 import jotalac.market_viewer.market_viewer_app.exception.NotFoundException;
 import jotalac.market_viewer.market_viewer_app.repository.DeviceRepository;
 import jotalac.market_viewer.market_viewer_app.repository.ScreenRepository;

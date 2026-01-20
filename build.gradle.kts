@@ -40,7 +40,6 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("io.finnhub:kotlin-client:2.0.22")
     implementation("org.mapstruct:mapstruct:1.6.3")
 
     compileOnly("org.projectlombok:lombok")

@@ -100,7 +100,7 @@ public class CoinGeckoCryptoProvider implements CryptoDataProvider {
                 .header("x-cg-demo-api-key", apiKey)
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, (req, res) -> {
-                    throw new ApiKeyNotValid("API key is not valid");
+                    throw new ApiKeyNotValid("CoinGecko API key is not valid");
                 })
                 .toBodilessEntity();
     }

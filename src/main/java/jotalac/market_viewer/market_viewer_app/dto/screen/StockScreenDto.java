@@ -3,6 +3,7 @@ package jotalac.market_viewer.market_viewer_app.dto.screen;
 import jakarta.validation.constraints.Min;
 import jotalac.market_viewer.market_viewer_app.entity.screens.GraphType;
 import jotalac.market_viewer.market_viewer_app.entity.screens.ScreenType;
+import jotalac.market_viewer.market_viewer_app.entity.screens.stock_screen.StockTimeFrame;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,9 +12,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class StockScreenDto extends ScreenDto {
-    private String assetName;
-    private String timeFrame;
-    private String currency;
+    private String symbol;
+    private StockTimeFrame timeFrame;
     private Boolean displayGraph;
     private GraphType graphType;
     private Boolean simpleDisplay;

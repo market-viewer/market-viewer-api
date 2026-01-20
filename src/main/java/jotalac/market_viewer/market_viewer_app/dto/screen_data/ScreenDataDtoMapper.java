@@ -2,6 +2,7 @@ package jotalac.market_viewer.market_viewer_app.dto.screen_data;
 
 import jotalac.market_viewer.market_viewer_app.entity.screens.*;
 import jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen.CryptoPriceData;
+import jotalac.market_viewer.market_viewer_app.entity.screens.stock_screen.StockPriceData;
 import org.mapstruct.Mapper;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 

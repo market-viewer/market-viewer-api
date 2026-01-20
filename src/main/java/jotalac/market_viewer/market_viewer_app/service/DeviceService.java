@@ -21,6 +21,7 @@ import jotalac.market_viewer.market_viewer_app.repository.DeviceRepository;
 import jotalac.market_viewer.market_viewer_app.repository.ScreenRepository;
 import jotalac.market_viewer.market_viewer_app.repository.UserRepository;
 import jotalac.market_viewer.market_viewer_app.service.provider.CryptoDataProvider;
+import jotalac.market_viewer.market_viewer_app.service.provider.StockDataProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -39,11 +40,12 @@ public class DeviceService {
     private final ScreenDtoMapper screenDtoMapper;
     private final ApiKeyRepository apiKeyRepository;
     private final CryptoDataProvider cryptoDataProvider;
+    private final StockDataProvider stockDataProvider;
 
     private Boolean userHasRequiredApiKeys(User user, ScreenType screenType) {
         return switch (screenType) {
             case CRYPTO -> apiKeyRepository.existsByEndpointAndUser(ApiKeyProvider.COINGECKO, user);
-            case STOCK -> apiKeyRepository.existsByEndpointAndUser(ApiKeyProvider.FINNHUB, user);
+            case STOCK -> apiKeyRepository.existsByEndpointAndUser(ApiKeyProvider.TWELVE_DATA, user);
             case AI_TEXT -> apiKeyRepository.existsByEndpointAndUser(ApiKeyProvider.GEMINI, user);
             default -> true;
         };
@@ -61,7 +63,13 @@ public class DeviceService {
         }
 
         if (screenDto instanceof StockScreenDto stockScreenDto) {
-            //TODO validate stock asset name
+            if (stockScreenDto.getSymbol() == null) {return;}
+            String apiKey = apiKeyRepository.findByEndpointAndUser(ApiKeyProvider.TWELVE_DATA, user)
+                    .orElseThrow(() -> new MissingApiKey("Missing API key for stock data"))
+                    .getValue();
+
+            stockDataProvider.validateAssetSymbol(stockScreenDto.getSymbol(), apiKey);
+            return;
         }
     }
 
@@ -119,7 +127,6 @@ public class DeviceService {
         return screenDtoMapper.toDto(newScreen);
     }
 
-    //TODO delete the last fetch time on screen when updating the screen data
     @Transactional
     public ScreenDto updateScreen(Integer deviceId, Integer screenId, ScreenDto screenDto, String username) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));

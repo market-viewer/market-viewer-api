@@ -3,7 +3,8 @@ package jotalac.market_viewer.market_viewer_app.dto.screen;
 import jotalac.market_viewer.market_viewer_app.entity.screens.*;
 import jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen.CryptoPriceData;
 import jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen.CryptoScreen;
-import jotalac.market_viewer.market_viewer_app.service.provider.CryptoDataProvider;
+import jotalac.market_viewer.market_viewer_app.entity.screens.stock_screen.StockPriceData;
+import jotalac.market_viewer.market_viewer_app.entity.screens.stock_screen.StockScreen;
 import org.mapstruct.*;
 
 import java.util.List;

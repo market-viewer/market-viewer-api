@@ -4,10 +4,8 @@ import jotalac.market_viewer.market_viewer_app.dto.api_response.coingecko.CoinGe
 import jotalac.market_viewer.market_viewer_app.entity.ApiKey;
 import jotalac.market_viewer.market_viewer_app.entity.ApiKeyProvider;
 import jotalac.market_viewer.market_viewer_app.entity.screens.AITextScreen;
-import jotalac.market_viewer.market_viewer_app.entity.screens.Screen;
-import jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen.CryptoPriceData;
 import jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen.CryptoScreen;
-import jotalac.market_viewer.market_viewer_app.entity.screens.StockScreen;
+import jotalac.market_viewer.market_viewer_app.entity.screens.stock_screen.StockScreen;
 import jotalac.market_viewer.market_viewer_app.exception.user.MissingApiKey;
 import jotalac.market_viewer.market_viewer_app.repository.ApiKeyRepository;
 import jotalac.market_viewer.market_viewer_app.service.provider.AiGenerationProvider;
@@ -71,7 +69,7 @@ public class ScreenUpdateService {
     }
 
     public void updateStockScreen(StockScreen stockScreen) {
-//        verifyUserHasApiKey(stockScreen, ApiKeyProvider.FINNHUB);
+//        verifyUserHasApiKey(stockScreen, ApiKeyProvider.TWELVEDATA);
 
         return;
     }
