@@ -35,12 +35,12 @@ public class HardwareService {
                 .orElseThrow(() -> new NotFoundException("Device with hash " + deviceHash + " not found"));
     }
 
-    private Boolean shouldFetchNewPriceData(LocalDateTime lastFetchTime) {
-        if (lastFetchTime == null) {
-            return true;
-        }
-        return lastFetchTime.plusMinutes(PRICE_DATA_LIFETIME_MINUTES).isBefore(LocalDateTime.now());
-    }
+//    private boolean shouldFetchNewPriceData(LocalDateTime lastFetchTime) {
+//        if (lastFetchTime == null) {
+//            return true;
+//        }
+//        return lastFetchTime.plusMinutes(PRICE_DATA_LIFETIME_MINUTES).isBefore(LocalDateTime.now());
+//    }
 
 
     public List<ScreenDto> getScreensForDevice(UUID deviceHash) {
@@ -56,21 +56,22 @@ public class HardwareService {
         Screen screen = screenRepository.findByDeviceAndPosition(device, screenPosition).orElseThrow(() -> new NotFoundException("Screen at position " + screenPosition + " not found"));
 
         if (screen instanceof AITextScreen aiTextScreen) {
-            if (aiTextScreen.getDisplayText().isEmpty()) {
+            if (aiTextScreen.needsUpdate()) {
                 screenUpdateService.updateAiTextScreen(aiTextScreen);
                 screenRepository.save(aiTextScreen);
             }
+
             return screenDataDtoMapper.toAITextDto(aiTextScreen);
         }
         if (screen instanceof CryptoScreen cryptoScreen) {
-            if (shouldFetchNewPriceData(cryptoScreen.getPriceData().getFetchTimePrice())) {
+            if (cryptoScreen.needsUpdate()) {
                 screenUpdateService.updateCryptoScreen(cryptoScreen);
                 screenRepository.save(cryptoScreen);
             }
             return screenDataDtoMapper.toCryptoDto(cryptoScreen.getPriceData());
         }
         if (screen instanceof StockScreen stockScreen) {
-            if (shouldFetchNewPriceData(stockScreen.getPriceData().getFetchTimePrice())) {
+            if (stockScreen.needsUpdate()) {
                 screenUpdateService.updateStockScreen(stockScreen);
                 screenRepository.save(stockScreen);
             }

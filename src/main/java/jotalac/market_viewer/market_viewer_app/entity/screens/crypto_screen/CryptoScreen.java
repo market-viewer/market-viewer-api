@@ -7,16 +7,21 @@ import jakarta.validation.constraints.Positive;
 import jotalac.market_viewer.market_viewer_app.entity.screens.GraphType;
 import jotalac.market_viewer.market_viewer_app.entity.screens.Screen;
 import jotalac.market_viewer.market_viewer_app.entity.screens.ScreenType;
+import jotalac.market_viewer.market_viewer_app.entity.screens.UpdatableScreen;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+import static jotalac.market_viewer.market_viewer_app.config.Constants.PRICE_DATA_LIFETIME_MINUTES;
 
 @Entity
 @DiscriminatorValue("CRYPTO")
 @Getter
 @Setter
 @NoArgsConstructor
-public class CryptoScreen extends Screen {
+public class CryptoScreen extends Screen implements UpdatableScreen {
 
     // list of all asset names - /coins/list
     @Column(nullable = false)
@@ -56,4 +61,17 @@ public class CryptoScreen extends Screen {
         return ScreenType.CRYPTO;
     }
 
+    @Override
+    public LocalDateTime getLastUpdateTime() {
+        return priceData.getFetchTimePrice();
+    }
+
+    @Override
+    public boolean needsUpdate() {
+        if (priceData.getFetchTimePrice() == null) {
+            return true;
+        }
+
+        return priceData.getFetchTimePrice().plusMinutes(PRICE_DATA_LIFETIME_MINUTES).isBefore(LocalDateTime.now());
+    }
 }

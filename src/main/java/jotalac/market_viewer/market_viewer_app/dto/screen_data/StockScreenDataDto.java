@@ -7,13 +7,17 @@ import jotalac.market_viewer.market_viewer_app.entity.screens.ScreenType;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class StockScreenDataDto extends ScreenDataDto {
+    private String name;
+    private String currency;
     private Double price;
     private Double priceChange;
-    private Double openPrice;
-    private Double closePrice;
+    private List<Double> graphData;
+    private boolean isMarketOpen;
 
     @Override
     public ScreenType getScreenType() {

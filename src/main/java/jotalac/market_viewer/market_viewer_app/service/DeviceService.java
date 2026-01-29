@@ -42,7 +42,7 @@ public class DeviceService {
     private final CryptoDataProvider cryptoDataProvider;
     private final StockDataProvider stockDataProvider;
 
-    private Boolean userHasRequiredApiKeys(User user, ScreenType screenType) {
+    private boolean userHasRequiredApiKeys(User user, ScreenType screenType) {
         return switch (screenType) {
             case CRYPTO -> apiKeyRepository.existsByEndpointAndUser(ApiKeyProvider.COINGECKO, user);
             case STOCK -> apiKeyRepository.existsByEndpointAndUser(ApiKeyProvider.TWELVE_DATA, user);
@@ -69,22 +69,18 @@ public class DeviceService {
                     .getValue();
 
             stockDataProvider.validateAssetSymbol(stockScreenDto.getSymbol(), apiKey);
-            return;
         }
     }
 
     @Transactional
     public DeviceCreateResponse createDevice(DeviceCreateRequest deviceCreateRequest, String username) {
-
         User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
-
         //check new device name doesnt already exists
         if (deviceRepository.existsByUserIdAndName(user.getId(), deviceCreateRequest.name())) {
             throw new AlreadyExistsException("Device with name - '" + deviceCreateRequest.name() + "' already exists on your account");
         }
 
         Device newDevice = new Device(deviceCreateRequest.name(), user);
-
         deviceRepository.save(newDevice);
 
         return new DeviceCreateResponse(newDevice.getId(), newDevice.getDeviceHash());
@@ -149,7 +145,7 @@ public class DeviceService {
     @Transactional
     public void removeScreen(Integer deviceId, Integer screenId, String username) {
         User user  = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
-        Device device = deviceRepository.findByIdAndUser(deviceId, user).orElseThrow(() -> new NotFoundException("Device with id - " + deviceId + " not found"));
+        if (!deviceRepository.existsByIdAndUser(deviceId, user))  throw new NotFoundException("Device with id - " + deviceId + " not found within your account");
 
         Screen screen = screenRepository.findById(screenId).orElseThrow(() -> new NotFoundException("Screen with id - " + screenId + " not found"));
 
@@ -158,11 +154,11 @@ public class DeviceService {
         screenRepository.changeIndicesAfterDelete(deviceId, screenIndex);
     }
 
-    private Boolean canAddNewScreen(Device device) {
-        return screenRepository.countScreensByDevice(device) < DEVICE_MAX_SCREENS;
-    }
+//    private Boolean canAddNewScreen(Device device) {
+//        return screenRepository.countScreensByDevice(device) < DEVICE_MAX_SCREENS;
+//    }
 
-    private Boolean screenBelongsToDevice(Screen screen, Device device) {
+    private boolean screenBelongsToDevice(Screen screen, Device device) {
         return screen.getDevice().getId().equals(device.getId());
     }
 

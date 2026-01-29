@@ -14,4 +14,6 @@ public interface DeviceRepository extends JpaRepository<Device, Integer> {
     Optional<Device> findByDeviceHash(UUID deviceHash);
     Optional<Device> findByIdAndUser(Integer id, User user);
 
+    boolean existsByIdAndUser(Integer id, User user);
+
 }

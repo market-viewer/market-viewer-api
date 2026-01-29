@@ -6,6 +6,9 @@ public interface StockDataProvider {
 
     StockPriceData fetchStockPriceData(String assetName);
 
+    Object fetchStockGraphData();
+
+
     void validateApiKey(String apiKey);
 
     void validateAssetSymbol(String symbol, String apiKey);

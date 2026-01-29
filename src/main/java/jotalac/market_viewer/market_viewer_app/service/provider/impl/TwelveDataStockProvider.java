@@ -2,22 +2,19 @@ package jotalac.market_viewer.market_viewer_app.service.provider.impl;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import jotalac.market_viewer.market_viewer_app.dto.api_response.coingecko.CoinGeckoPriceResponse;
-import jotalac.market_viewer.market_viewer_app.dto.api_response.twelve_data.TwelveDataPriceResponse;
 import jotalac.market_viewer.market_viewer_app.entity.screens.stock_screen.StockPriceData;
 import jotalac.market_viewer.market_viewer_app.exception.api_provider.ApiKeyNotValid;
+import jotalac.market_viewer.market_viewer_app.exception.api_provider.ApiRateLimitExceededException;
 import jotalac.market_viewer.market_viewer_app.exception.api_provider.AssetNameNotValid;
 import jotalac.market_viewer.market_viewer_app.service.provider.StockDataProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import tools.jackson.databind.JsonNode;
 
 import java.time.Duration;
-import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -40,6 +37,11 @@ public class TwelveDataStockProvider implements StockDataProvider {
     }
 
     @Override
+    public Object fetchStockGraphData() {
+        return null;
+    }
+
+    @Override
     public void validateApiKey(String apiKey) {
         JsonNode response = restClient.get()
                 .uri(uriBuilder -> uriBuilder
@@ -53,8 +55,7 @@ public class TwelveDataStockProvider implements StockDataProvider {
                 })
                 .body(JsonNode.class);
 
-        assert response != null;
-        if (response.get("status") != null) {
+        if (!isResponseValid(response)) {
             throw new ApiKeyNotValid("TwelveData api key is not valid");
         }
     }
@@ -68,7 +69,7 @@ public class TwelveDataStockProvider implements StockDataProvider {
     }
 
     private void performSymbolValidation(String symbol, String apiKey) {
-        List<TwelveDataPriceResponse>responseList = restClient.get()
+        JsonNode response = restClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("price")
                         .queryParam("symbol", symbol)
@@ -79,12 +80,27 @@ public class TwelveDataStockProvider implements StockDataProvider {
                 .onStatus(HttpStatusCode::isError, (req, res) -> {
                     throw new IllegalStateException("CoinGecko API Error [" + res.getStatusCode() + "]: " + res.getBody());
                 })
-                .body(new ParameterizedTypeReference<>() {
-                });
+                .body(JsonNode.class);
 
-        if (responseList == null || responseList.isEmpty()) {
+        if (!isResponseValid(response)) {
             throw new AssetNameNotValid("Symbol '" + symbol + "' not found");
         }
+    }
+
+    // for some reason the twelve data api doesnt return the actual code in the response code but in the body :(
+    private boolean isResponseValid(JsonNode response) {
+        if (response == null) {
+            return false;
+        }
+        // if error status is present in the response body
+        JsonNode bodyResponseStatus = response.get("code");
+        if (bodyResponseStatus != null) {
+            if (bodyResponseStatus.asInt() == 429) {
+                throw new ApiRateLimitExceededException("TwelveData api rate limit exceeded");
+            }
+            return false;
+        }
+        return true;
     }
 
 

@@ -30,8 +30,9 @@ public class StockPriceData extends AbstractEntity {
     private List<Double> graphData;
 
     @Column
-    private LocalDateTime fetchTimePrice;
+    private LocalDateTime lastFetchTime;
 
     @Column
-    private LocalDateTime fetchTimeGraph;
+    private boolean isMarketOpen;
+
 }
