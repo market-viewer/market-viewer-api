@@ -18,9 +18,9 @@ public final class Constants {
     public static final String DEFAULT_BG_COLOR = "0x23f4";
 
     // hardware data fetch
-    public static final Integer PRICE_DATA_LIFETIME_MINUTES = 3;
+    public static final Integer PRICE_DATA_LIFETIME_MINUTES = 5;
     public static final Integer GRAPH_DATA_LIFETIME_MINUTES = 30;
 
-    public static final Integer PRICE_GRAPH_POINTS = 90;
+    public static final Integer PRICE_GRAPH_POINTS = 100;
 
 }

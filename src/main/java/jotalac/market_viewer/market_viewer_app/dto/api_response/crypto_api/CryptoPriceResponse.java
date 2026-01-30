@@ -1,9 +1,8 @@
-package jotalac.market_viewer.market_viewer_app.dto.api_response.coingecko;
+package jotalac.market_viewer.market_viewer_app.dto.api_response.crypto_api;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -13,7 +12,7 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
 @NoArgsConstructor
-public class CoinGeckoPriceResponse {
+public class CryptoPriceResponse {
     @JsonProperty("current_price")
     private Double price;
 

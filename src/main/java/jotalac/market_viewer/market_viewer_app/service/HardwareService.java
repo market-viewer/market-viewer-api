@@ -11,14 +11,13 @@ import jotalac.market_viewer.market_viewer_app.entity.screens.stock_screen.Stock
 import jotalac.market_viewer.market_viewer_app.exception.NotFoundException;
 import jotalac.market_viewer.market_viewer_app.repository.DeviceRepository;
 import jotalac.market_viewer.market_viewer_app.repository.ScreenRepository;
+import jotalac.market_viewer.market_viewer_app.service.screen_refresh_service.CryptoScreenRefreshService;
+import jotalac.market_viewer.market_viewer_app.service.screen_refresh_service.StockScreenRefreshService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-
-import static jotalac.market_viewer.market_viewer_app.config.Constants.PRICE_DATA_LIFETIME_MINUTES;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +27,8 @@ public class HardwareService {
     private final ScreenRepository screenRepository;
     private final ScreenDtoMapper screenDtoMapper;
     private final ScreenDataDtoMapper screenDataDtoMapper;
-    private final ScreenUpdateService screenUpdateService;
+    private final CryptoScreenRefreshService cryptoScreenRefreshService;
+    private final StockScreenRefreshService stockScreenRefreshService;
 
     private Device getDeviceFromHash(UUID deviceHash) {
         return deviceRepository.findByDeviceHash(deviceHash)
@@ -57,24 +57,25 @@ public class HardwareService {
 
         if (screen instanceof AITextScreen aiTextScreen) {
             if (aiTextScreen.needsUpdate()) {
-                screenUpdateService.updateAiTextScreen(aiTextScreen);
-                screenRepository.save(aiTextScreen);
+//                cryptoScreenRefreshService.updateAiTextScreen(aiTextScreen);
+//                screenRepository.save(aiTextScreen);
             }
 
             return screenDataDtoMapper.toAITextDto(aiTextScreen);
         }
         if (screen instanceof CryptoScreen cryptoScreen) {
             if (cryptoScreen.needsUpdate()) {
-                screenUpdateService.updateCryptoScreen(cryptoScreen);
+                cryptoScreenRefreshService.refreshCryptoScreen(cryptoScreen);
                 screenRepository.save(cryptoScreen);
             }
             return screenDataDtoMapper.toCryptoDto(cryptoScreen.getPriceData());
         }
         if (screen instanceof StockScreen stockScreen) {
             if (stockScreen.needsUpdate()) {
-                screenUpdateService.updateStockScreen(stockScreen);
+                stockScreenRefreshService.refreshStockScreen(stockScreen);
                 screenRepository.save(stockScreen);
             }
+
             return screenDataDtoMapper.toStockDto(stockScreen.getPriceData());
         }
 

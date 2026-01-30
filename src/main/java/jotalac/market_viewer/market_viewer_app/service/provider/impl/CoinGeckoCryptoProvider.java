@@ -2,30 +2,30 @@ package jotalac.market_viewer.market_viewer_app.service.provider.impl;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.Expiry;
-import jotalac.market_viewer.market_viewer_app.dto.api_response.coingecko.CoinGeckoGraphResponse;
-import jotalac.market_viewer.market_viewer_app.dto.api_response.coingecko.CoinGeckoPriceResponse;
-import jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen.CryptoPriceData;
+import jotalac.market_viewer.market_viewer_app.dto.api_response.crypto_api.CryptoGraphResponse;
+import jotalac.market_viewer.market_viewer_app.dto.api_response.crypto_api.CryptoPriceResponse;
 import jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen.CryptoTimeFrame;
 import jotalac.market_viewer.market_viewer_app.exception.api_provider.ApiKeyNotValid;
+import jotalac.market_viewer.market_viewer_app.exception.api_provider.ApiRateLimitExceededException;
+import jotalac.market_viewer.market_viewer_app.exception.api_provider.ApiResponseError;
 import jotalac.market_viewer.market_viewer_app.exception.api_provider.AssetNameNotValid;
 import jotalac.market_viewer.market_viewer_app.service.provider.CryptoDataProvider;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatusCode;
-import org.springframework.stereotype.Service;
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.http.HttpRequest;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 @Slf4j
-@Service
+@Component
 public class CoinGeckoCryptoProvider implements CryptoDataProvider {
     CoinGeckoCryptoProvider(@Qualifier("coingeckoClient") RestClient restClient) {this.restClient = restClient;}
 
@@ -38,23 +38,19 @@ public class CoinGeckoCryptoProvider implements CryptoDataProvider {
             .build();
 
     @Override
-    public CoinGeckoPriceResponse fetchCryptoPriceData(String currency, String assetName, CryptoTimeFrame timeFrame, String apiKey) {
-        List<CoinGeckoPriceResponse> responseList = restClient.get()
+    public CryptoPriceResponse fetchCryptoPriceData(String currency, String assetName, CryptoTimeFrame timeFrame, String apiKey) {
+        List<CryptoPriceResponse> responseList = restClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("coins/markets")
                         .queryParam("vs_currency", currency)
                         .queryParam("ids", assetName)
                         .queryParam("price_change_percentage", timeFrame.getValue())
-//                        .queryParam("price_change_percentage", "24h")
                         .build())
                 .header("x-cg-demo-api-key", apiKey)
                 .retrieve()
                 //handle any error
-                .onStatus(HttpStatusCode::isError, (req, res) -> {
-                    String responseBody = new String(res.getBody().readAllBytes(), StandardCharsets.UTF_8);
-                    throw new IllegalStateException("CoinGecko API Error [" + res.getStatusCode() + "]: " + responseBody);
-                })
-                .body(new ParameterizedTypeReference<List<CoinGeckoPriceResponse>>() {});
+                .onStatus(HttpStatusCode::isError, this::handleErrorResponse)
+                .body(new ParameterizedTypeReference<List<CryptoPriceResponse>>() {});
 
         log.info("Fetching price data for: {}", assetName);
 
@@ -68,7 +64,7 @@ public class CoinGeckoCryptoProvider implements CryptoDataProvider {
 
     @Override
     public List<Double> fetchCryptoGraphData(String currency, String assetName, CryptoTimeFrame timeFrame, String apiKey) {
-        CoinGeckoGraphResponse response = restClient.get()
+        CryptoGraphResponse response = restClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/coins/{id}/market_chart")
                         .queryParam("vs_currency", currency)
@@ -77,11 +73,8 @@ public class CoinGeckoCryptoProvider implements CryptoDataProvider {
                 .header("x-cg-demo-api-key", apiKey)
                 .retrieve()
                 //handle any error
-                .onStatus(HttpStatusCode::isError, (req, res) -> {
-                    String responseBody = new String(res.getBody().readAllBytes(), StandardCharsets.UTF_8);
-                    throw new IllegalStateException("CoinGecko API Error [" + res.getStatusCode() + "]: " + responseBody);
-                })
-                .body(CoinGeckoGraphResponse.class);
+                .onStatus(HttpStatusCode::isError, this::handleErrorResponse)
+                .body(CryptoGraphResponse.class);
 
         log.info("Fetching graph data for: {}", assetName);
 
@@ -99,9 +92,7 @@ public class CoinGeckoCryptoProvider implements CryptoDataProvider {
                 .uri("ping")
                 .header("x-cg-demo-api-key", apiKey)
                 .retrieve()
-                .onStatus(HttpStatusCode::isError, (req, res) -> {
-                    throw new ApiKeyNotValid("CoinGecko API key is not valid");
-                })
+                .onStatus(HttpStatusCode::isError, this::handleErrorResponse)
                 .toBodilessEntity();
     }
 
@@ -115,7 +106,7 @@ public class CoinGeckoCryptoProvider implements CryptoDataProvider {
     }
 
     private void performCoinValidation(String assetName, String apiKey) {
-        List<CoinGeckoPriceResponse> responseList = restClient.get()
+        List<CryptoPriceResponse> responseList = restClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("coins/markets")
                         .queryParam("vs_currency", "usd")
@@ -124,9 +115,7 @@ public class CoinGeckoCryptoProvider implements CryptoDataProvider {
                 .header("x-cg-demo-api-key", apiKey)
                 .retrieve()
                 //handle any error
-                .onStatus(HttpStatusCode::isError, (req, res) -> {
-                    throw new IllegalStateException("CoinGecko API Error [" + res.getStatusCode() + "]: " + res.getBody());
-                })
+                .onStatus(HttpStatusCode::isError, this::handleErrorResponse)
                 .body(new ParameterizedTypeReference<>() {
                 });
 
@@ -135,5 +124,13 @@ public class CoinGeckoCryptoProvider implements CryptoDataProvider {
         if (responseList == null || responseList.isEmpty()) {
             throw new AssetNameNotValid("Coin name '" + assetName + "' not found");
         }
+    }
+
+    @Override
+    public void handleErrorResponse(HttpRequest req, ClientHttpResponse res) throws IOException {
+        if (res.getStatusCode().value() == 429) {
+            throw new ApiRateLimitExceededException("CoinGecko rate limit exceeded");
+        }
+        throw new ApiResponseError("CoinGecko API Error [" + res.getStatusCode() + "]: " + res.getBody());
     }
 }

@@ -12,7 +12,7 @@ public enum StockTimeFrame {
     HOUR("1min", 60, "1h"),
     FIVE_HOUR("1min", 300, "5h"),
     DAY("5min", 78, "1day"),
-    WEEK("30", 65, "7day"),
+    WEEK("30min", 65, "7day"),
     TWO_WEEKS("1h", 65, "14day"),
     MONTH("2h", 70, "30day"),
     YEAR("1day", 260, "1y"),

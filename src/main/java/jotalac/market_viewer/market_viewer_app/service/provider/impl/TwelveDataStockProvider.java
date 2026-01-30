@@ -2,23 +2,26 @@ package jotalac.market_viewer.market_viewer_app.service.provider.impl;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import jotalac.market_viewer.market_viewer_app.dto.api_response.stock_api.StockGraphResponse;
+import jotalac.market_viewer.market_viewer_app.dto.api_response.stock_api.StockPriceResponse;
 import jotalac.market_viewer.market_viewer_app.entity.screens.stock_screen.StockPriceData;
-import jotalac.market_viewer.market_viewer_app.exception.api_provider.ApiKeyNotValid;
-import jotalac.market_viewer.market_viewer_app.exception.api_provider.ApiRateLimitExceededException;
-import jotalac.market_viewer.market_viewer_app.exception.api_provider.AssetNameNotValid;
+import jotalac.market_viewer.market_viewer_app.exception.api_provider.*;
 import jotalac.market_viewer.market_viewer_app.service.provider.StockDataProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Objects;
 
-@Service
 @Slf4j
+@Component
 public class TwelveDataStockProvider implements StockDataProvider {
     TwelveDataStockProvider(@Qualifier("twelveDataClient") RestClient restClient) {this.restClient = restClient;}
 
@@ -30,15 +33,55 @@ public class TwelveDataStockProvider implements StockDataProvider {
             .expireAfterWrite(Duration.ofDays(100))
             .build();
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
 
     @Override
-    public StockPriceData fetchStockPriceData(String assetName) {
-        return null;
+    public StockPriceResponse fetchStockPriceData(String symbol, String apiKey) {
+        JsonNode response = restClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/quote")
+                        .queryParam("symbol", symbol)
+                        .queryParam("apikey", apiKey)
+                        .build()
+                )
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    throw new ApiResponseError("TwelveData price - response error");
+                })
+                .body(JsonNode.class);
+
+        if (!isResponseValid(response)) {
+            log.warn(String.valueOf(response));
+            throw new ApiResponseError("TwelveData price fetch error:" + response.get("message").asString());
+        }
+
+        return objectMapper.convertValue(response, StockPriceResponse.class);
     }
 
     @Override
-    public Object fetchStockGraphData() {
-        return null;
+    public List<Double> fetchStockGraphData(String symbol, String interval, Integer outputSize, String apiKey) {
+        JsonNode response = restClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/time_series")
+                        .queryParam("symbol", symbol)
+                        .queryParam("interval", interval)
+                        .queryParam("outputsize", outputSize)
+                        .queryParam("apikey", apiKey)
+                        .build()
+                )
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    throw new ApiResponseError("TwelveData graph fetch error");
+                })
+                .body(JsonNode.class);
+
+        if (!isResponseValid(response)) {
+            throw new ApiKeyNotValid("TwelveData api error: " + response.get("message").asString() );
+        }
+        StockGraphResponse graphData = objectMapper.convertValue(response, StockGraphResponse.class);
+
+        return graphData.getReducedPrices();
     }
 
     @Override
@@ -78,12 +121,12 @@ public class TwelveDataStockProvider implements StockDataProvider {
                 .retrieve()
                 //handle any error
                 .onStatus(HttpStatusCode::isError, (req, res) -> {
-                    throw new IllegalStateException("CoinGecko API Error [" + res.getStatusCode() + "]: " + res.getBody());
+                    throw new IllegalStateException("Twelve data API Error [" + res.getStatusCode() + "]: " + res.getBody());
                 })
                 .body(JsonNode.class);
 
         if (!isResponseValid(response)) {
-            throw new AssetNameNotValid("Symbol '" + symbol + "' not found");
+            throw new AssetNameNotValid("Symbol '" + symbol + "' not availible");
         }
     }
 

@@ -1,12 +1,16 @@
 package jotalac.market_viewer.market_viewer_app.service.provider;
 
+import jotalac.market_viewer.market_viewer_app.dto.api_response.stock_api.StockGraphResponse;
+import jotalac.market_viewer.market_viewer_app.dto.api_response.stock_api.StockPriceResponse;
 import jotalac.market_viewer.market_viewer_app.entity.screens.stock_screen.StockPriceData;
+
+import java.util.List;
 
 public interface StockDataProvider {
 
-    StockPriceData fetchStockPriceData(String assetName);
+    StockPriceResponse fetchStockPriceData(String symbol, String apiKey);
 
-    Object fetchStockGraphData();
+    List<Double> fetchStockGraphData(String symbol, String interval, Integer outputSize, String apiKey);
 
 
     void validateApiKey(String apiKey);

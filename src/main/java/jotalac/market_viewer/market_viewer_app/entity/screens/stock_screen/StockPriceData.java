@@ -33,6 +33,6 @@ public class StockPriceData extends AbstractEntity {
     private LocalDateTime lastFetchTime;
 
     @Column
-    private boolean isMarketOpen;
+    private Boolean isMarketOpen;
 
 }

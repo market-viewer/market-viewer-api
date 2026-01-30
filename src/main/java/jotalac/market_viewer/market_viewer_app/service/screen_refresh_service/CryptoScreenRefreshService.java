@@ -1,6 +1,7 @@
-package jotalac.market_viewer.market_viewer_app.service;
+package jotalac.market_viewer.market_viewer_app.service.screen_refresh_service;
 
-import jotalac.market_viewer.market_viewer_app.dto.api_response.coingecko.CoinGeckoPriceResponse;
+import jotalac.market_viewer.market_viewer_app.dto.api_response.crypto_api.CryptoPriceResponse;
+import jotalac.market_viewer.market_viewer_app.dto.api_response.stock_api.StockPriceResponse;
 import jotalac.market_viewer.market_viewer_app.entity.ApiKey;
 import jotalac.market_viewer.market_viewer_app.entity.ApiKeyProvider;
 import jotalac.market_viewer.market_viewer_app.entity.screens.AITextScreen;
@@ -20,23 +21,28 @@ import java.util.List;
 
 import static jotalac.market_viewer.market_viewer_app.config.Constants.GRAPH_DATA_LIFETIME_MINUTES;
 
-@Slf4j
+
 @Service
 @RequiredArgsConstructor
-public class ScreenUpdateService {
+public class CryptoScreenRefreshService {
 
-    private final AiGenerationProvider aiGenerationProvider;
     private final CryptoDataProvider cryptoDataProvider;
-    private final StockDataProvider stockDataProvider;
     private final ApiKeyRepository apiKeyRepository;
 
 
-    public void updateCryptoScreen(CryptoScreen cryptoScreen) {
+    public void refreshCryptoScreen(CryptoScreen cryptoScreen) {
         ApiKey userApiKey = apiKeyRepository.findByEndpointAndUser(ApiKeyProvider.COINGECKO, cryptoScreen.getDevice().getUser())
                 .orElseThrow(() -> new MissingApiKey("Missing api key"));
 
-        CoinGeckoPriceResponse newData = cryptoDataProvider.fetchCryptoPriceData(
-                cryptoScreen.getCurrency(), cryptoScreen.getAssetName(), cryptoScreen.getTimeFrame(), userApiKey.getValue()
+        updatePrice(cryptoScreen, userApiKey.getValue());
+
+        //graph data are not fetched every time
+        updateGraphData(cryptoScreen, userApiKey.getValue());
+    }
+
+    private void updatePrice(CryptoScreen cryptoScreen, String apiKey) {
+        CryptoPriceResponse newData = cryptoDataProvider.fetchCryptoPriceData(
+                cryptoScreen.getCurrency(), cryptoScreen.getAssetName(), cryptoScreen.getTimeFrame(), apiKey
         );
 
         //set the data
@@ -46,35 +52,28 @@ public class ScreenUpdateService {
         cryptoScreenPriceData.setPriceChange(newData.getPriceChange());
         cryptoScreenPriceData.setAllTimeHigh(newData.getAllTimeHigh());
         cryptoScreenPriceData.setAllTimeHighChange(newData.getAllTimeHighChange());
+    }
 
+    private void updateGraphData(CryptoScreen cryptoScreen, String apiKey) {
+        var cryptoScreenPriceData = cryptoScreen.getPriceData();
         //check if we need to fetch graph data
         LocalDateTime lastGraphFetchTime = cryptoScreenPriceData.getFetchTimeGraph();
         if (
                 cryptoScreen.getDisplayGraph() &&
-                (lastGraphFetchTime == null ||
-                cryptoScreenPriceData.getFetchTimeGraph()
-                    .plusMinutes(GRAPH_DATA_LIFETIME_MINUTES)
-                    .isBefore(LocalDateTime.now())
+                (
+                    lastGraphFetchTime == null || cryptoScreenPriceData.getFetchTimeGraph()
+                        .plusMinutes(GRAPH_DATA_LIFETIME_MINUTES)
+                        .isBefore(LocalDateTime.now())
                 )
         )
         {
             List<Double> newGraphData = cryptoDataProvider.fetchCryptoGraphData(
-                    cryptoScreen.getCurrency(), cryptoScreen.getAssetName(), cryptoScreen.getTimeFrame(), userApiKey.getValue()
+                    cryptoScreen.getCurrency(), cryptoScreen.getAssetName(), cryptoScreen.getTimeFrame(), apiKey
             );
 
             cryptoScreenPriceData.setGraphData(newGraphData);
             cryptoScreenPriceData.setFetchTimeGraph(LocalDateTime.now());
         }
-
     }
 
-    public void updateStockScreen(StockScreen stockScreen) {
-//        verifyUserHasApiKey(stockScreen, ApiKeyProvider.TWELVEDATA);
-
-        return;
-    }
-
-    public void updateAiTextScreen(AITextScreen aiTextScreen) {
-        return;
-    }
 }
