@@ -16,12 +16,8 @@ class DeviceTest {
         Device device = new Device(deviceName, user);
 
         assertNotNull(device.getDeviceHash(), "Device hash should be generated");
-        assertNotNull(device.getDeviceConfig(), "Device config should be initialized");
         assertEquals(deviceName, device.getName());
         assertEquals(user, device.getUser());
-        
-        // Verify default config
-        assertTrue(device.getDeviceConfig().getPlaySounds(), "Default device config should have playSounds=true");
     }
 
 

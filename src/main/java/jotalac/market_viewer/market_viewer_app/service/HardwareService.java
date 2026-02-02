@@ -35,19 +35,20 @@ public class HardwareService {
                 .orElseThrow(() -> new NotFoundException("Device with hash " + deviceHash + " not found"));
     }
 
-//    private boolean shouldFetchNewPriceData(LocalDateTime lastFetchTime) {
-//        if (lastFetchTime == null) {
-//            return true;
-//        }
-//        return lastFetchTime.plusMinutes(PRICE_DATA_LIFETIME_MINUTES).isBefore(LocalDateTime.now());
-//    }
-
-
     public List<ScreenDto> getScreensForDevice(UUID deviceHash) {
         Device device = getDeviceFromHash(deviceHash);
 
         List<Screen> screens = screenRepository.getScreensByDevice(device);
         return screenDtoMapper.toDtos(screens);
+    }
+
+    public ScreenDto getSingleScreenForDevice(UUID deviceHash, Integer position) {
+        Device device = getDeviceFromHash(deviceHash);
+
+        Screen screen = screenRepository.findByDeviceAndPosition(device, position)
+                .orElseThrow(() -> new NotFoundException("Screen at position " + position + " doesnt exist"));
+
+        return screenDtoMapper.toDto(screen);
     }
 
     public ScreenDataDto getScreenData(UUID deviceHash, Integer screenPosition) {

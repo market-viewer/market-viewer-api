@@ -3,6 +3,7 @@ package jotalac.market_viewer.market_viewer_app.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.UUID;
 
@@ -17,7 +18,6 @@ public class Device extends AbstractEntity {
 
     public Device(String name, User user) {
         deviceHash = UUID.randomUUID();
-        deviceConfig = new DeviceConfig();
         this.name = name;
         this.user = user;
     }
@@ -31,8 +31,4 @@ public class Device extends AbstractEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
-    @Embedded
-    private DeviceConfig deviceConfig;
-
 }

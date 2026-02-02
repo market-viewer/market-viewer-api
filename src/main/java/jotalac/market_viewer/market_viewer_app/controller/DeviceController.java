@@ -4,19 +4,18 @@ import jakarta.validation.Valid;
 import jotalac.market_viewer.market_viewer_app.dto.MessageResponse;
 import jotalac.market_viewer.market_viewer_app.dto.device.DeviceCreateRequest;
 import jotalac.market_viewer.market_viewer_app.dto.device.DeviceCreateResponse;
+import jotalac.market_viewer.market_viewer_app.dto.device.ReorderScreensRequest;
 import jotalac.market_viewer.market_viewer_app.dto.screen.ScreenDto;
 import jotalac.market_viewer.market_viewer_app.service.DeviceService;
-import org.aspectj.bridge.Message;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/device")
+@RequestMapping("/device")
 public class DeviceController {
 
     private final DeviceService deviceService;
@@ -37,7 +36,7 @@ public class DeviceController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    // TODO list user devices
+    // TODO list user devices - for front end
     @GetMapping()
     public Object listUserDevices(Principal principal) {
         return null;
@@ -67,5 +66,12 @@ public class DeviceController {
         List<ScreenDto> deviceScreens = deviceService.getAllScreensForDevice(deviceId, "test");
 
         return ResponseEntity.status(HttpStatus.OK).body(deviceScreens);
+    }
+
+    @PatchMapping("{deviceId}/screen-order")
+    public ResponseEntity<MessageResponse> reorderScreens(@PathVariable Integer deviceId, @Valid @RequestBody ReorderScreensRequest newScreenOrder) {
+        deviceService.reorderDeviceScreens(deviceId, "test", newScreenOrder);
+
+        return ResponseEntity.status(HttpStatus.OK).body(new MessageResponse("Screen order set successfully"));
     }
 }

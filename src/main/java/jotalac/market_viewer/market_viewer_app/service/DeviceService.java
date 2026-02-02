@@ -3,6 +3,7 @@ package jotalac.market_viewer.market_viewer_app.service;
 import jakarta.transaction.Transactional;
 import jotalac.market_viewer.market_viewer_app.dto.device.DeviceCreateRequest;
 import jotalac.market_viewer.market_viewer_app.dto.device.DeviceCreateResponse;
+import jotalac.market_viewer.market_viewer_app.dto.device.ReorderScreensRequest;
 import jotalac.market_viewer.market_viewer_app.dto.screen.CryptoScreenDto;
 import jotalac.market_viewer.market_viewer_app.dto.screen.ScreenDto;
 import jotalac.market_viewer.market_viewer_app.dto.screen.ScreenDtoMapper;
@@ -14,6 +15,7 @@ import jotalac.market_viewer.market_viewer_app.entity.screens.*;
 import jotalac.market_viewer.market_viewer_app.exception.AlreadyExistsException;
 import jotalac.market_viewer.market_viewer_app.exception.NotFoundException;
 import jotalac.market_viewer.market_viewer_app.exception.device.DeviceScreenLimitExceeded;
+import jotalac.market_viewer.market_viewer_app.exception.device.ScreenReorderException;
 import jotalac.market_viewer.market_viewer_app.exception.screen.ScreenDoesntBelongToDeviceException;
 import jotalac.market_viewer.market_viewer_app.exception.user.MissingApiKey;
 import jotalac.market_viewer.market_viewer_app.repository.ApiKeyRepository;
@@ -26,7 +28,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static jotalac.market_viewer.market_viewer_app.config.Constants.DEVICE_MAX_SCREENS;
 
@@ -156,9 +162,6 @@ public class DeviceService {
         screenRepository.changeIndicesAfterDelete(deviceId, screenIndex);
     }
 
-//    private Boolean canAddNewScreen(Device device) {
-//        return screenRepository.countScreensByDevice(device) < DEVICE_MAX_SCREENS;
-//    }
 
     private boolean screenBelongsToDevice(Screen screen, Device device) {
         return screen.getDevice().getId().equals(device.getId());
@@ -172,5 +175,33 @@ public class DeviceService {
         List<Screen> deviceScreens = screenRepository.getScreensByDevice(device);
 
         return screenDtoMapper.toDtos(deviceScreens);
+    }
+
+    @Transactional
+    public void reorderDeviceScreens(Integer deviceId, String username, ReorderScreensRequest newScreenOrder) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
+        Device device = deviceRepository.findByIdAndUser(deviceId, user).orElseThrow(() -> new NotFoundException("Device not found"));
+
+        List<Screen> existingScreens = screenRepository.getScreensByDevice(device);
+        List<Integer> newOrderIds = newScreenOrder.newOrder();
+
+        //check if the new order size matches the actual screen count
+        if (existingScreens.size() != newScreenOrder.newOrder().size()) {
+            throw new ScreenReorderException("Number of screens doesnt match");
+        }
+
+        Map<Integer, Screen> screenMap = existingScreens.stream()
+                .collect(Collectors.toMap(Screen::getId, Function.identity()));
+
+        //check if every screen id was provided (and nothing more or less)
+        if (!screenMap.keySet().equals(new HashSet<>(newOrderIds))) {
+            throw new ScreenReorderException("Provided screen IDs do not match the device's screen IDs");
+        }
+
+        for (int i = 0; i < newOrderIds.size(); i++) {
+            Integer screenId = newOrderIds.get(i);
+            Screen screen = screenMap.get(screenId);
+            screen.setPosition(i);
+        }
     }
 }
