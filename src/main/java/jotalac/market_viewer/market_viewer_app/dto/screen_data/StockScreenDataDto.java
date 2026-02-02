@@ -17,7 +17,7 @@ public class StockScreenDataDto extends ScreenDataDto {
     private Double price;
     private Double priceChange;
     private List<Double> graphData;
-    private boolean isMarketOpen;
+    private Boolean isMarketOpen;
 
     @Override
     public ScreenType getScreenType() {

@@ -19,4 +19,10 @@ public class RestClientConfig {
     public RestClient twelveDataClient(RestClient.Builder builder) {
         return builder.baseUrl("https://api.twelvedata.com/").build();
     }
+
+    @Bean
+    @Qualifier("geminiClient")
+    public RestClient geminiClient(RestClient.Builder builder) {
+        return builder.baseUrl("https://generativelanguage.googleapis.com").build();
+    }
 }

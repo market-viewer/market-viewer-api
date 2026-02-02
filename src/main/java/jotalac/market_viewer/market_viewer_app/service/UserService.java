@@ -14,6 +14,7 @@ import jotalac.market_viewer.market_viewer_app.exception.NotFoundException;
 import jotalac.market_viewer.market_viewer_app.exception.user.UserAlreadyExistsException;
 import jotalac.market_viewer.market_viewer_app.repository.ApiKeyRepository;
 import jotalac.market_viewer.market_viewer_app.repository.UserRepository;
+import jotalac.market_viewer.market_viewer_app.service.provider.AIGenerationProvider;
 import jotalac.market_viewer.market_viewer_app.service.provider.CryptoDataProvider;
 import jotalac.market_viewer.market_viewer_app.service.provider.StockDataProvider;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,8 @@ public class UserService {
     private final ApiKeyDtoMapper apiKeyDtoMapper;
     private final CryptoDataProvider cryptoDataProvider;
     private final StockDataProvider stockDataProvider;
+    private final AIGenerationProvider aiGenerationProvider;
+
 
     @Transactional
     public UserDto createUser(UserCreateDto userCreateDto) {
@@ -106,7 +109,7 @@ public class UserService {
                 stockDataProvider.validateApiKey(apiKeyCreateDto.keyValue());
             }
             case GEMINI -> {
-                //TODO validate gemini api key
+                aiGenerationProvider.validateApiKey(apiKeyCreateDto.keyValue());
             }
         }
     }
