@@ -1,19 +1,13 @@
 package jotalac.market_viewer.market_viewer_app.service.screen_refresh_service;
 
 import jotalac.market_viewer.market_viewer_app.dto.api_response.crypto_api.CryptoPriceResponse;
-import jotalac.market_viewer.market_viewer_app.dto.api_response.stock_api.StockPriceResponse;
 import jotalac.market_viewer.market_viewer_app.entity.ApiKey;
 import jotalac.market_viewer.market_viewer_app.entity.ApiKeyProvider;
-import jotalac.market_viewer.market_viewer_app.entity.screens.AITextScreen;
 import jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen.CryptoScreen;
-import jotalac.market_viewer.market_viewer_app.entity.screens.stock_screen.StockScreen;
 import jotalac.market_viewer.market_viewer_app.exception.user.MissingApiKey;
 import jotalac.market_viewer.market_viewer_app.repository.ApiKeyRepository;
-import jotalac.market_viewer.market_viewer_app.service.provider.AiGenerationProvider;
 import jotalac.market_viewer.market_viewer_app.service.provider.CryptoDataProvider;
-import jotalac.market_viewer.market_viewer_app.service.provider.StockDataProvider;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

@@ -1,5 +1,7 @@
 package jotalac.market_viewer.market_viewer_app.entity.screens;
 
+import jotalac.market_viewer.market_viewer_app.entity.screens.clock_screen.ClockScreen;
+import jotalac.market_viewer.market_viewer_app.entity.screens.clock_screen.TimeFormat;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +14,7 @@ class ClockScreenTest {
     void shouldHaveDefaultValues() {
         ClockScreen screen = new ClockScreen();
         
-        assertEquals("Europe/London", screen.getTimeZone());
+        assertEquals("Europe/London", screen.getTimezone());
         assertEquals(TimeFormat.TWENTY_FOUR_HOUR, screen.getTimeFormat());
         assertEquals(ScreenType.CLOCK, screen.getScreenType());
     }
@@ -21,10 +23,10 @@ class ClockScreenTest {
     @DisplayName("ClockScreen setters should work")
     void shouldUpdateFields() {
         ClockScreen screen = new ClockScreen();
-        screen.setTimeZone("America/New_York");
+        screen.setTimezone("America/New_York");
         screen.setTimeFormat(TimeFormat.TWELVE_HOUR);
         
-        assertEquals("America/New_York", screen.getTimeZone());
+        assertEquals("America/New_York", screen.getTimezone());
         assertEquals(TimeFormat.TWELVE_HOUR, screen.getTimeFormat());
     }
 }

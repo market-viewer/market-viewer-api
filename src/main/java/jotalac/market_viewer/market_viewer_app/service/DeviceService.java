@@ -23,12 +23,14 @@ import jotalac.market_viewer.market_viewer_app.repository.UserRepository;
 import jotalac.market_viewer.market_viewer_app.service.provider.CryptoDataProvider;
 import jotalac.market_viewer.market_viewer_app.service.provider.StockDataProvider;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 import static jotalac.market_viewer.market_viewer_app.config.Constants.DEVICE_MAX_SCREENS;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DeviceService {

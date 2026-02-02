@@ -1,10 +1,12 @@
 package jotalac.market_viewer.market_viewer_app.dto.screen;
 
 import jotalac.market_viewer.market_viewer_app.entity.screens.*;
+import jotalac.market_viewer.market_viewer_app.entity.screens.clock_screen.ClockScreen;
 import jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen.CryptoPriceData;
 import jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen.CryptoScreen;
 import jotalac.market_viewer.market_viewer_app.entity.screens.stock_screen.StockPriceData;
 import jotalac.market_viewer.market_viewer_app.entity.screens.stock_screen.StockScreen;
+import jotalac.market_viewer.market_viewer_app.util.TimezoneProvider;
 import org.mapstruct.*;
 
 import java.util.List;
@@ -23,26 +25,35 @@ public interface ScreenDtoMapper {
     List<ScreenDto> toDtos(List<Screen> screens);
 
     AITextScreenDto toAITextDto(AITextScreen screen);
-    ClockScreenDto toClockDto(ClockScreen screen);
     CryptoScreenDto toCryptoDto(CryptoScreen screen);
     StockScreenDto toStockDto(StockScreen screen);
 
-    default void updateEntityFromDto(ScreenDto dto, @MappingTarget Screen entity) {
-        if (dto instanceof AITextScreenDto d && entity instanceof AITextScreen e) {
-            updateAIText(d, e);
-        } else if (dto instanceof ClockScreenDto d && entity instanceof ClockScreen e) {
-            updateClock(d, e);
-        } else if (dto instanceof CryptoScreenDto d && entity instanceof CryptoScreen e) {
-            updateCrypto(d, e);
-            //on update reset the data
-            e.setPriceData(new CryptoPriceData());
-        } else if (dto instanceof StockScreenDto d && entity instanceof StockScreen e) {
-            updateStock(d, e);
-            //on update reset the data
-            e.setPriceData(new StockPriceData());
+    @Mapping(target = "timezoneCode", source = "timezone", qualifiedByName = "getTimezoneCode")
+    ClockScreenDto toClockDto(ClockScreen screen);
 
-        } else {
-            throw new IllegalArgumentException("Screen update data do not match screen type");
+
+    default void updateEntityFromDto(ScreenDto dto, @MappingTarget Screen entity) {
+        switch (dto) {
+            case AITextScreenDto d when entity instanceof AITextScreen e -> {
+                updateAIText(d, e);
+            }
+            case ClockScreenDto d when entity instanceof ClockScreen e -> {
+                updateClock(d, e);
+            }
+            case CryptoScreenDto d when entity instanceof CryptoScreen e -> {
+                updateCrypto(d, e);
+                //on update reset the data
+                e.setPriceData(new CryptoPriceData());
+            }
+            case StockScreenDto d when entity instanceof StockScreen e -> {
+                updateStock(d, e);
+                //on update reset the data
+                e.setPriceData(new StockPriceData());
+
+            }
+            default -> {
+                throw new IllegalArgumentException("Screen update data do not match screen type");
+            }
         }
     }
 
@@ -99,5 +110,11 @@ public interface ScreenDtoMapper {
         StockScreen entity = new StockScreen();
         updateStock(dto, entity);
         return entity;
+    }
+
+   //get the timezone code for clock screen
+    @Named("getTimezoneCode")
+    default String getTimezoneCode(String timezone) {
+        return TimezoneProvider.getTimezoneCode(timezone);
     }
 }
