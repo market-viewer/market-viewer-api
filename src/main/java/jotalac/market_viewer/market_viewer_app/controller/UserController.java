@@ -22,6 +22,7 @@ public class UserController {
     private final UserService userService;
     private final UserDtoMapper userDtoMapper;
 
+    //TODO add user auth
     @PostMapping("/{userId}/apiKey")
     public ResponseEntity<MessageResponse> addApiKey(@PathVariable Integer userId, @Valid @RequestBody ApiKeyCreateDto apiKeyCreateDto) {
         boolean created = userService.saveUserApiKey(apiKeyCreateDto, userId);
@@ -33,12 +34,14 @@ public class UserController {
         }
     }
 
+    //TODO add user auth
     @GetMapping("/{userId}/apiKey")
     public ResponseEntity<List<ApiKeyDto>> getApiKey(@PathVariable Integer userId) {
         List<ApiKeyDto> apiKeyList = userService.getUserApiKeys(userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(apiKeyList);
     }
 
+    //TODO add user auth
     @DeleteMapping("/{userId}/apiKey")
     public ResponseEntity<MessageResponse> removeApiKey(@PathVariable Integer userId,@Valid @RequestBody ApiKeyDeleteDto apiKeyDeleteDto) {
         userService.deleteUserApiKey(apiKeyDeleteDto.endpoint(), userId);
