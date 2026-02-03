@@ -5,6 +5,7 @@ import jotalac.market_viewer.market_viewer_app.dto.MessageResponse;
 import jotalac.market_viewer.market_viewer_app.dto.api_key.ApiKeyCreateDto;
 import jotalac.market_viewer.market_viewer_app.dto.api_key.ApiKeyDeleteDto;
 import jotalac.market_viewer.market_viewer_app.dto.api_key.ApiKeyDto;
+import jotalac.market_viewer.market_viewer_app.dto.device.DeviceDto;
 import jotalac.market_viewer.market_viewer_app.dto.user.UserDtoMapper;
 import jotalac.market_viewer.market_viewer_app.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +47,12 @@ public class UserController {
     public ResponseEntity<MessageResponse> removeApiKey(@PathVariable Integer userId,@Valid @RequestBody ApiKeyDeleteDto apiKeyDeleteDto) {
         userService.deleteUserApiKey(apiKeyDeleteDto.endpoint(), userId);
         return ResponseEntity.ok(new MessageResponse("API Key deleted"));
+    }
+
+    @GetMapping("/{userId}/device")
+    public ResponseEntity<List<DeviceDto>> getAllDevices(@PathVariable Integer userId) {
+        List<DeviceDto> userDevices = userService.getUserDevices(userId);
+        return ResponseEntity.ok(userDevices);
     }
 
 }

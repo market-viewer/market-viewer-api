@@ -4,15 +4,19 @@ import jakarta.transaction.Transactional;
 import jotalac.market_viewer.market_viewer_app.dto.api_key.ApiKeyCreateDto;
 import jotalac.market_viewer.market_viewer_app.dto.api_key.ApiKeyDto;
 import jotalac.market_viewer.market_viewer_app.dto.api_key.ApiKeyDtoMapper;
+import jotalac.market_viewer.market_viewer_app.dto.device.DeviceDto;
 import jotalac.market_viewer.market_viewer_app.dto.user.UserCreateDto;
 import jotalac.market_viewer.market_viewer_app.dto.user.UserDto;
 import jotalac.market_viewer.market_viewer_app.dto.user.UserDtoMapper;
 import jotalac.market_viewer.market_viewer_app.entity.ApiKey;
 import jotalac.market_viewer.market_viewer_app.entity.ApiKeyProvider;
+import jotalac.market_viewer.market_viewer_app.entity.Device;
 import jotalac.market_viewer.market_viewer_app.entity.User;
 import jotalac.market_viewer.market_viewer_app.exception.NotFoundException;
 import jotalac.market_viewer.market_viewer_app.exception.user.UserAlreadyExistsException;
 import jotalac.market_viewer.market_viewer_app.repository.ApiKeyRepository;
+import jotalac.market_viewer.market_viewer_app.repository.DeviceRepository;
+import jotalac.market_viewer.market_viewer_app.repository.ScreenRepository;
 import jotalac.market_viewer.market_viewer_app.repository.UserRepository;
 import jotalac.market_viewer.market_viewer_app.service.provider.AIGenerationProvider;
 import jotalac.market_viewer.market_viewer_app.service.provider.CryptoDataProvider;
@@ -21,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -36,6 +41,8 @@ public class UserService {
     private final CryptoDataProvider cryptoDataProvider;
     private final StockDataProvider stockDataProvider;
     private final AIGenerationProvider aiGenerationProvider;
+    private final DeviceRepository deviceRepository;
+    private final ScreenRepository screenRepository;
 
 
     @Transactional
@@ -82,13 +89,20 @@ public class UserService {
         apiKeyRepository.delete(apiKey);
     }
 
-    @Transactional
+    @Transactional()
     public List<ApiKeyDto> getUserApiKeys(Integer userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
 
         List<ApiKey> userApiKeys = apiKeyRepository.findByUser(user);
 
         return apiKeyDtoMapper.toDtoList(userApiKeys);
+    }
+
+    @Transactional
+    public List<DeviceDto> getUserDevices(Integer userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+
+        return deviceRepository.findDeviceDtosByUser(user);
     }
 
     private void validateUserExistence(String username, String email) {
