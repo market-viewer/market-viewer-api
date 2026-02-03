@@ -21,9 +21,9 @@ import static jotalac.market_viewer.market_viewer_app.config.Constants.DEFAULT_B
 public class AITextScreen extends Screen implements UpdatableScreen{
 
     @Column(nullable = false)
-    private String prompt = "";
+    private String prompt = "Tell me today's news about bitcoin";
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String displayText = "";
 
     @Column(nullable = false)
@@ -49,7 +49,7 @@ public class AITextScreen extends Screen implements UpdatableScreen{
 
     @Override
     public boolean needsUpdate() {
-        if (displayText.isEmpty()) return true;
+        if (displayText.isEmpty() || lastFetchTime == null) return true;
 
         return lastFetchTime.plusHours(fetchIntervalHours).isBefore(LocalDateTime.now());
     }

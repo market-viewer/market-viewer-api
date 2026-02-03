@@ -11,6 +11,8 @@ import jotalac.market_viewer.market_viewer_app.entity.screens.stock_screen.Stock
 import jotalac.market_viewer.market_viewer_app.exception.NotFoundException;
 import jotalac.market_viewer.market_viewer_app.repository.DeviceRepository;
 import jotalac.market_viewer.market_viewer_app.repository.ScreenRepository;
+import jotalac.market_viewer.market_viewer_app.service.provider.AIGenerationProvider;
+import jotalac.market_viewer.market_viewer_app.service.screen_refresh_service.AIScreenRefreshService;
 import jotalac.market_viewer.market_viewer_app.service.screen_refresh_service.CryptoScreenRefreshService;
 import jotalac.market_viewer.market_viewer_app.service.screen_refresh_service.StockScreenRefreshService;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,8 @@ public class HardwareService {
     private final ScreenDataDtoMapper screenDataDtoMapper;
     private final CryptoScreenRefreshService cryptoScreenRefreshService;
     private final StockScreenRefreshService stockScreenRefreshService;
+    private final AIGenerationProvider aIGenerationProvider;
+    private final AIScreenRefreshService aIScreenRefreshService;
 
     private Device getDeviceFromHash(UUID deviceHash) {
         return deviceRepository.findByDeviceHash(deviceHash)
@@ -58,8 +62,8 @@ public class HardwareService {
 
         if (screen instanceof AITextScreen aiTextScreen) {
             if (aiTextScreen.needsUpdate()) {
-//                cryptoScreenRefreshService.updateAiTextScreen(aiTextScreen);
-//                screenRepository.save(aiTextScreen);
+                aIScreenRefreshService.refreshAiScreen(aiTextScreen);
+                screenRepository.save(aiTextScreen);
             }
 
             return screenDataDtoMapper.toAITextDto(aiTextScreen);

@@ -1,5 +1,6 @@
 package jotalac.market_viewer.market_viewer_app.dto.screen;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import jotalac.market_viewer.market_viewer_app.entity.screens.ScreenType;

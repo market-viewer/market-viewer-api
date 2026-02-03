@@ -36,6 +36,7 @@ public interface ScreenDtoMapper {
         switch (dto) {
             case AITextScreenDto d when entity instanceof AITextScreen e -> {
                 updateAIText(d, e);
+                e.setLastFetchTime(null);
             }
             case ClockScreenDto d when entity instanceof ClockScreen e -> {
                 updateClock(d, e);
