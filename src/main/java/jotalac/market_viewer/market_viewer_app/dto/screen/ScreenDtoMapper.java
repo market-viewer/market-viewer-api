@@ -62,6 +62,7 @@ public interface ScreenDtoMapper {
     @Mapping(target = "device", ignore = true)
     @Mapping(target = "position", ignore = true)
     @Mapping (target = "displayText", ignore = true)
+    @Mapping(target = "lastFetchTime", ignore = true)
     void updateAIText(AITextScreenDto dto, @MappingTarget AITextScreen entity);
 
     @Mapping(target = "id", ignore = true)

@@ -1,16 +1,14 @@
 package jotalac.market_viewer.market_viewer_app.service;
 
-import jakarta.transaction.Transactional;
 import jotalac.market_viewer.market_viewer_app.dto.api_key.ApiKeyCreateDto;
 import jotalac.market_viewer.market_viewer_app.dto.api_key.ApiKeyDto;
 import jotalac.market_viewer.market_viewer_app.dto.api_key.ApiKeyDtoMapper;
 import jotalac.market_viewer.market_viewer_app.dto.device.DeviceDto;
-import jotalac.market_viewer.market_viewer_app.dto.user.UserCreateDto;
+import jotalac.market_viewer.market_viewer_app.dto.auth.RegisterRequestDto;
 import jotalac.market_viewer.market_viewer_app.dto.user.UserDto;
 import jotalac.market_viewer.market_viewer_app.dto.user.UserDtoMapper;
 import jotalac.market_viewer.market_viewer_app.entity.ApiKey;
 import jotalac.market_viewer.market_viewer_app.entity.ApiKeyProvider;
-import jotalac.market_viewer.market_viewer_app.entity.Device;
 import jotalac.market_viewer.market_viewer_app.entity.User;
 import jotalac.market_viewer.market_viewer_app.exception.NotFoundException;
 import jotalac.market_viewer.market_viewer_app.exception.user.UserAlreadyExistsException;
@@ -22,16 +20,19 @@ import jotalac.market_viewer.market_viewer_app.service.provider.AIGenerationProv
 import jotalac.market_viewer.market_viewer_app.service.provider.CryptoDataProvider;
 import jotalac.market_viewer.market_viewer_app.service.provider.StockDataProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final UserDtoMapper userDtoMapper;
@@ -44,19 +45,7 @@ public class UserService {
     private final DeviceRepository deviceRepository;
     private final ScreenRepository screenRepository;
 
-
-    @Transactional
-    public UserDto createUser(UserCreateDto userCreateDto) {
-        //check if the user already exists
-        validateUserExistence(userCreateDto.username(), userCreateDto.email());
-
-        String hashedPassword = passwordEncoder.encode(userCreateDto.password());
-        User newUser = new User(userCreateDto.username(), userCreateDto.email(), hashedPassword);
-
-        userRepository.save(newUser);
-        return userDtoMapper.toDto(newUser);
-    }
-
+    //TODO put this into apikeyService file
     @Transactional
     public boolean saveUserApiKey(ApiKeyCreateDto apiKeyCreateDto, Integer userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
@@ -105,15 +94,6 @@ public class UserService {
         return deviceRepository.findDeviceDtosByUser(user);
     }
 
-    private void validateUserExistence(String username, String email) {
-        if (userRepository.existsByUsername(username)) {
-            throw new UserAlreadyExistsException("User with username - '" + username + "', already exists");
-        }
-        if (userRepository.existsByEmail(email)) {
-            throw new UserAlreadyExistsException("User with email : " + email + " already exists");
-        }
-    }
-
     private void validateApiKey(ApiKeyCreateDto apiKeyCreateDto) {
         switch (apiKeyCreateDto.endpoint()) {
             case COINGECKO -> {
@@ -129,8 +109,9 @@ public class UserService {
     }
 
 
-
-
-
-
+    @Override
+    @Transactional(readOnly = true)
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return null;
+    }
 }

@@ -17,12 +17,16 @@ import java.util.Set;
 @AllArgsConstructor
 public class User extends AbstractEntity {
 
+    public User(String username, String hashedPassword) {
+        this.username = username;
+        this.password = hashedPassword;
+    }
+
     @Basic(optional = false)
     @Column(nullable = false, unique = true)
     private String username;
 
-    @Basic(optional = false)
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String email;
 
     @Basic(optional = false)

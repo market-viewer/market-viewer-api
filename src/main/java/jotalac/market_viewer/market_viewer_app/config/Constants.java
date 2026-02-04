@@ -2,6 +2,8 @@ package jotalac.market_viewer.market_viewer_app.config;
 
 public final class Constants {
     private Constants() {}
+    //auth
+    public static final int RECOVERY_CODES_NUMBER = 5;
 
     // user data validation
     public static final int USERNAME_MIN_LENGTH = 3;

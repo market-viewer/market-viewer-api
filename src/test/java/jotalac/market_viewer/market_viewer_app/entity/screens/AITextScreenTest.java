@@ -14,7 +14,7 @@ class AITextScreenTest {
     void shouldHaveDefaultValues() {
         AITextScreen screen = new AITextScreen();
         
-        assertEquals("", screen.getPrompt());
+        assertEquals("Tell me today's news about bitcoin", screen.getPrompt());
         assertEquals("", screen.getDisplayText());
         assertEquals(5, screen.getFetchIntervalHours());
         assertEquals(ScreenType.AI_TEXT, screen.getScreenType());

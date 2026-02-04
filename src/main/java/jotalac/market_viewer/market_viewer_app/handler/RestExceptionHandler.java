@@ -7,24 +7,19 @@ import jotalac.market_viewer.market_viewer_app.exception.AlreadyExistsException;
 import jotalac.market_viewer.market_viewer_app.exception.NotFoundException;
 import jotalac.market_viewer.market_viewer_app.exception.api_provider.ApiProviderException;
 import jotalac.market_viewer.market_viewer_app.exception.api_provider.ApiRateLimitExceededException;
+import jotalac.market_viewer.market_viewer_app.exception.auth.AuthException;
 import jotalac.market_viewer.market_viewer_app.exception.device.DeviceException;
 import jotalac.market_viewer.market_viewer_app.exception.screen.ScreenException;
 import jotalac.market_viewer.market_viewer_app.exception.user.UserException;
-import org.springframework.cglib.core.Local;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestControllerAdvice
 public class RestExceptionHandler {
@@ -68,6 +63,12 @@ public class RestExceptionHandler {
     @ExceptionHandler(ApiProviderException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse apiProviderException(HttpServletRequest request, ApiProviderException e) {
+        return new ErrorResponse(LocalDateTime.now(), e.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(AuthException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse authException(HttpServletRequest request, AuthException e) {
         return new ErrorResponse(LocalDateTime.now(), e.getMessage(), request.getRequestURI());
     }
 
