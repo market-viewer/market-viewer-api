@@ -4,14 +4,11 @@ import jotalac.market_viewer.market_viewer_app.dto.api_key.ApiKeyCreateDto;
 import jotalac.market_viewer.market_viewer_app.dto.api_key.ApiKeyDto;
 import jotalac.market_viewer.market_viewer_app.dto.api_key.ApiKeyDtoMapper;
 import jotalac.market_viewer.market_viewer_app.dto.device.DeviceDto;
-import jotalac.market_viewer.market_viewer_app.dto.auth.RegisterRequestDto;
-import jotalac.market_viewer.market_viewer_app.dto.user.UserDto;
 import jotalac.market_viewer.market_viewer_app.dto.user.UserDtoMapper;
 import jotalac.market_viewer.market_viewer_app.entity.ApiKey;
 import jotalac.market_viewer.market_viewer_app.entity.ApiKeyProvider;
 import jotalac.market_viewer.market_viewer_app.entity.User;
 import jotalac.market_viewer.market_viewer_app.exception.NotFoundException;
-import jotalac.market_viewer.market_viewer_app.exception.user.UserAlreadyExistsException;
 import jotalac.market_viewer.market_viewer_app.repository.ApiKeyRepository;
 import jotalac.market_viewer.market_viewer_app.repository.DeviceRepository;
 import jotalac.market_viewer.market_viewer_app.repository.ScreenRepository;
@@ -20,6 +17,7 @@ import jotalac.market_viewer.market_viewer_app.service.provider.AIGenerationProv
 import jotalac.market_viewer.market_viewer_app.service.provider.CryptoDataProvider;
 import jotalac.market_viewer.market_viewer_app.service.provider.StockDataProvider;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -111,7 +109,15 @@ public class UserService implements UserDetailsService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return null;
+    public UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
+        User user =  userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return buildUserDetails(user);
+    }
+
+    private UserDetails buildUserDetails(User user) {
+        return org.springframework.security.core.userdetails.User.builder()
+                .username(user.getUsername())
+                .password(user.getPassword())
+                .build();
     }
 }

@@ -1,6 +1,8 @@
 package jotalac.market_viewer.market_viewer_app.controller;
 
 import jakarta.validation.Valid;
+import jotalac.market_viewer.market_viewer_app.dto.auth.LoginRequestDto;
+import jotalac.market_viewer.market_viewer_app.dto.auth.LoginResponseDto;
 import jotalac.market_viewer.market_viewer_app.dto.auth.RegisterRequestDto;
 import jotalac.market_viewer.market_viewer_app.dto.auth.RegisterResponseDto;
 import jotalac.market_viewer.market_viewer_app.dto.user.UserDto;
@@ -32,4 +34,12 @@ public class AuthController {
 
         return  ResponseEntity.status(HttpStatus.CREATED).body(registerResponse);
     }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto loginRequestDto) {
+        LoginResponseDto loginResponse = authService.login(loginRequestDto);
+
+        return  ResponseEntity.status(HttpStatus.OK).body(loginResponse);
+    }
+
 }

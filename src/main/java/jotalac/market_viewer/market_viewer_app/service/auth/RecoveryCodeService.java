@@ -1,5 +1,6 @@
 package jotalac.market_viewer.market_viewer_app.service.auth;
 
+import jakarta.validation.constraints.NotNull;
 import jotalac.market_viewer.market_viewer_app.entity.RecoveryCode;
 import jotalac.market_viewer.market_viewer_app.entity.User;
 import jotalac.market_viewer.market_viewer_app.repository.RecoveryCodeRepository;
@@ -35,6 +36,14 @@ public class RecoveryCodeService {
         }
 
         return rawCodes;
+    }
+
+    @Transactional
+    public Boolean validateCode(User user, String recoveryCode) {
+        List<RecoveryCode> userCodes = recoveryCodeRepository.findByOwner(user);
+
+        return userCodes.stream()
+                .anyMatch(code -> passwordEncoder.matches(recoveryCode, code.getHashedCode()));
     }
 
 }

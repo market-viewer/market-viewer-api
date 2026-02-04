@@ -9,6 +9,7 @@ import jotalac.market_viewer.market_viewer_app.dto.ErrorResponse;
 import jotalac.market_viewer.market_viewer_app.service.auth.JwtService;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,6 +25,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -58,14 +60,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 }
             }
 
-            filterChain.doFilter(request, response);
         } catch (ExpiredJwtException _) {
             sendResponse("Token expired", response, request.getRequestURI());
+            return;
         } catch (UsernameNotFoundException _) {
             sendResponse("User not found", response, request.getRequestURI());
-        } catch (Exception _) {
+            return;
+        } catch (Exception e) {
+            log.info(e.getMessage());
             sendResponse("Invalid JWT token", response, request.getRequestURI());
+            return;
         }
+        filterChain.doFilter(request, response);
     }
 
     private void sendResponse(String message, HttpServletResponse response, String uri) throws IOException {
