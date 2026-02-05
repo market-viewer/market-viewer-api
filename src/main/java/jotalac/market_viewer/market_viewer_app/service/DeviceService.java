@@ -83,7 +83,7 @@ public class DeviceService {
     @Transactional
     public DeviceCreateResponse createDevice(DeviceCreateRequest deviceCreateRequest, String username) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
-        //check new device name doesnt already exists
+        //check new device name doesn't already exist
         if (deviceRepository.existsByUserIdAndName(user.getId(), deviceCreateRequest.name())) {
             throw new AlreadyExistsException("Device with name - '" + deviceCreateRequest.name() + "' already exists on your account");
         }
@@ -136,10 +136,7 @@ public class DeviceService {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
         Device device = deviceRepository.findByIdAndUser(deviceId, user).orElseThrow(() -> new NotFoundException("Device not found"));
 
-        Screen screen = screenRepository.findById(screenId).orElseThrow(() -> new NotFoundException("Screen not found"));
-        if (!screenBelongsToDevice(screen, device)) {
-            throw new ScreenDoesntBelongToDeviceException("Screen doesnt belong to this device");
-        }
+        Screen screen = screenRepository.findByIdAndDevice(screenId, device).orElseThrow(() -> new NotFoundException("Screen not found"));
 
         validateAssetName(screenDto, user);
 
@@ -153,9 +150,9 @@ public class DeviceService {
     @Transactional
     public void removeScreen(Integer deviceId, Integer screenId, String username) {
         User user  = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
-        if (!deviceRepository.existsByIdAndUser(deviceId, user))  throw new NotFoundException("Device with id - " + deviceId + " not found within your account");
+        Device device = deviceRepository.findByIdAndUser(deviceId, user).orElseThrow(() -> new NotFoundException("Device not found"));
 
-        Screen screen = screenRepository.findById(screenId).orElseThrow(() -> new NotFoundException("Screen with id - " + screenId + " not found"));
+        Screen screen = screenRepository.findByIdAndDevice(screenId, device).orElseThrow(() -> new NotFoundException("Screen with id - " + screenId + " not found"));
 
         Integer screenIndex = screen.getPosition();
         screenRepository.delete(screen);

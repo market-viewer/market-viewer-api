@@ -26,7 +26,7 @@ public class HardwareController {
         }
     }
 
-        @GetMapping("/{deviceHash}/screen")
+    @GetMapping("/{deviceHash}/screen")
     public ResponseEntity<List<ScreenDto>> getAllScreens(@PathVariable String deviceHash) {
         UUID deviceHashUUID = convertStringToDeviceHash(deviceHash);
         List<ScreenDto> deviceScreens = hardwareService.getScreensForDevice(deviceHashUUID);

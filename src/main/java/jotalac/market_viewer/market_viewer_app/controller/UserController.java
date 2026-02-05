@@ -11,8 +11,10 @@ import jotalac.market_viewer.market_viewer_app.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -23,10 +25,9 @@ public class UserController {
     private final UserService userService;
     private final UserDtoMapper userDtoMapper;
 
-    //TODO add user auth
-    @PostMapping("/{userId}/apiKey")
-    public ResponseEntity<MessageResponse> addApiKey(@PathVariable Integer userId, @Valid @RequestBody ApiKeyCreateDto apiKeyCreateDto) {
-        boolean created = userService.saveUserApiKey(apiKeyCreateDto, userId);
+    @PostMapping("/apiKey")
+    public ResponseEntity<MessageResponse> addApiKey(@Valid @RequestBody ApiKeyCreateDto apiKeyCreateDto, Principal principal) {
+        boolean created = userService.saveUserApiKey(apiKeyCreateDto, principal.getName());
 
         if (created) {
             return ResponseEntity.status(HttpStatus.CREATED).body(new MessageResponse("API key added"));
@@ -35,23 +36,21 @@ public class UserController {
         }
     }
 
-    //TODO add user auth
-    @GetMapping("/{userId}/apiKey")
-    public ResponseEntity<List<ApiKeyDto>> getApiKey(@PathVariable Integer userId) {
-        List<ApiKeyDto> apiKeyList = userService.getUserApiKeys(userId);
+    @GetMapping("/apiKey")
+    public ResponseEntity<List<ApiKeyDto>> getApiKey(Principal principal) {
+        List<ApiKeyDto> apiKeyList = userService.getUserApiKeys(principal.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(apiKeyList);
     }
 
-    //TODO add user auth
-    @DeleteMapping("/{userId}/apiKey")
-    public ResponseEntity<MessageResponse> removeApiKey(@PathVariable Integer userId,@Valid @RequestBody ApiKeyDeleteDto apiKeyDeleteDto) {
-        userService.deleteUserApiKey(apiKeyDeleteDto.endpoint(), userId);
+    @DeleteMapping("/apiKey")
+    public ResponseEntity<MessageResponse> removeApiKey(@Valid @RequestBody ApiKeyDeleteDto apiKeyDeleteDto, Principal principal) {
+        userService.deleteUserApiKey(apiKeyDeleteDto.endpoint(), principal.getName());
         return ResponseEntity.ok(new MessageResponse("API Key deleted"));
     }
 
-    @GetMapping("/{userId}/device")
-    public ResponseEntity<List<DeviceDto>> getAllDevices(@PathVariable Integer userId) {
-        List<DeviceDto> userDevices = userService.getUserDevices(userId);
+    @GetMapping("/device")
+    public ResponseEntity<List<DeviceDto>> getAllDevices(Principal principal) {
+        List<DeviceDto> userDevices = userService.getUserDevices(principal.getName());
         return ResponseEntity.ok(userDevices);
     }
 

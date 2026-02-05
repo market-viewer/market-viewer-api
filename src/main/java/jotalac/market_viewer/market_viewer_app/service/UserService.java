@@ -43,10 +43,9 @@ public class UserService implements UserDetailsService {
     private final DeviceRepository deviceRepository;
     private final ScreenRepository screenRepository;
 
-    //TODO put this into apikeyService file
     @Transactional
-    public boolean saveUserApiKey(ApiKeyCreateDto apiKeyCreateDto, Integer userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+    public boolean saveUserApiKey(ApiKeyCreateDto apiKeyCreateDto, String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
 
         //validate if the key is valid
         validateApiKey(apiKeyCreateDto);
@@ -66,8 +65,8 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public void deleteUserApiKey(ApiKeyProvider apiKeyProvider, Integer userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+    public void deleteUserApiKey(ApiKeyProvider apiKeyProvider, String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
 
         ApiKey apiKey = apiKeyRepository
                 .findByEndpointAndUser(apiKeyProvider, user)
@@ -77,8 +76,8 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional()
-    public List<ApiKeyDto> getUserApiKeys(Integer userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+    public List<ApiKeyDto> getUserApiKeys(String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
 
         List<ApiKey> userApiKeys = apiKeyRepository.findByUser(user);
 
@@ -86,8 +85,8 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public List<DeviceDto> getUserDevices(Integer userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+    public List<DeviceDto> getUserDevices(String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
 
         return deviceRepository.findDeviceDtosByUser(user);
     }

@@ -16,6 +16,7 @@ public interface ScreenRepository extends JpaRepository<Screen, Integer> {
     Integer countScreensByDevice(Device device);
     List<Screen> getScreensByDevice(Device device);
     Optional<Screen> findByDeviceAndPosition(Device device, Integer position);
+    Optional<Screen> findByIdAndDevice(Integer id, Device device);
     void deleteByDevice(Device device);
 
     @Modifying

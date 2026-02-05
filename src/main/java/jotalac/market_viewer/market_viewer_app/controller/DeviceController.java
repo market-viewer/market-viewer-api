@@ -25,52 +25,45 @@ public class DeviceController {
     }
 
     @PostMapping
-    public ResponseEntity<DeviceCreateResponse> createDevice(@Valid @RequestBody DeviceCreateRequest deviceCreateRequest) {
-        DeviceCreateResponse deviceCreateResponse = deviceService.createDevice(deviceCreateRequest, "test");
+    public ResponseEntity<DeviceCreateResponse> createDevice(@Valid @RequestBody DeviceCreateRequest deviceCreateRequest, Principal principal) {
+        DeviceCreateResponse deviceCreateResponse = deviceService.createDevice(deviceCreateRequest, principal.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(deviceCreateResponse);
     }
 
     @DeleteMapping("{deviceId}")
-    public ResponseEntity<String> removeDevice(@PathVariable Integer deviceId) {
-        deviceService.deleteDevice(deviceId, "test");
+    public ResponseEntity<String> removeDevice(@PathVariable Integer deviceId, Principal principal) {
+        deviceService.deleteDevice(deviceId, principal.getName());
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    // TODO list user devices - for front end
-    @GetMapping()
-    public Object listUserDevices(Principal principal) {
-        return null;
-    }
-
     @PostMapping("/{deviceId}/screen")
-    public ResponseEntity<ScreenDto> addScreen(@PathVariable Integer deviceId, @Valid @RequestBody ScreenDto screenDto) {
-        ScreenDto newScreen = deviceService.addScreen(deviceId, screenDto, "test");
+    public ResponseEntity<ScreenDto> addScreen(@PathVariable Integer deviceId, @Valid @RequestBody ScreenDto screenDto, Principal principal) {
+        ScreenDto newScreen = deviceService.addScreen(deviceId, screenDto, principal.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(newScreen);
     }
 
     @PutMapping("{deviceId}/screen/{screenId}")
-    public ResponseEntity<ScreenDto> updateScreen(@PathVariable Integer deviceId, @PathVariable Integer screenId, @Valid @RequestBody ScreenDto screenDto) {
-        ScreenDto updatedScreen = deviceService.updateScreen(deviceId, screenId, screenDto, "test");
+    public ResponseEntity<ScreenDto> updateScreen(@PathVariable Integer deviceId, @PathVariable Integer screenId, @Valid @RequestBody ScreenDto screenDto, Principal principal) {
+        ScreenDto updatedScreen = deviceService.updateScreen(deviceId, screenId, screenDto, principal.getName());
         return ResponseEntity.status(HttpStatus.OK).body(updatedScreen);
     }
 
     @DeleteMapping("/{deviceId}/screen/{screenId}")
-//    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<MessageResponse> removeScreen(@PathVariable Integer deviceId, @PathVariable Integer screenId, Principal principal) {
-        deviceService.removeScreen(deviceId, screenId, "test");
+        deviceService.removeScreen(deviceId, screenId, principal.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(new MessageResponse("Screen removed successfully"));
     }
 
     @GetMapping("/{deviceId}/screen")
-    public ResponseEntity<List<ScreenDto>> getDeviceScreens(@PathVariable Integer deviceId) {
-        List<ScreenDto> deviceScreens = deviceService.getAllScreensForDevice(deviceId, "test");
+    public ResponseEntity<List<ScreenDto>> getDeviceScreens(@PathVariable Integer deviceId, Principal principal) {
+        List<ScreenDto> deviceScreens = deviceService.getAllScreensForDevice(deviceId, principal.getName());
 
         return ResponseEntity.status(HttpStatus.OK).body(deviceScreens);
     }
 
-    @PatchMapping("{deviceId}/screen-order")
-    public ResponseEntity<MessageResponse> reorderScreens(@PathVariable Integer deviceId, @Valid @RequestBody ReorderScreensRequest newScreenOrder) {
-        deviceService.reorderDeviceScreens(deviceId, "test", newScreenOrder);
+    @PatchMapping("{deviceId}/screen/order")
+    public ResponseEntity<MessageResponse> reorderScreens(@PathVariable Integer deviceId, @Valid @RequestBody ReorderScreensRequest newScreenOrder, Principal principal) {
+        deviceService.reorderDeviceScreens(deviceId, principal.getName(), newScreenOrder);
 
         return ResponseEntity.status(HttpStatus.OK).body(new MessageResponse("Screen order set successfully"));
     }
