@@ -42,7 +42,7 @@ public class HardwareController {
         return ResponseEntity.ok(deviceScreens);
     }
 
-    @GetMapping("{deviceHash}/screen/data/{position}")
+    @GetMapping("{deviceHash}/screen/{position}/data")
     public ResponseEntity<ScreenDataDto> getScreenData(@PathVariable String deviceHash, @PathVariable @NotNull Integer position) {
         UUID deviceHashUUID = convertStringToDeviceHash(deviceHash);
         ScreenDataDto screenData = hardwareService.getScreenData(deviceHashUUID, position);
