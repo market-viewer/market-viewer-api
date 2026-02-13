@@ -66,7 +66,7 @@ public class DeviceService {
                     .orElseThrow(() -> new MissingApiKey("Missing API key for crypto data"))
                     .getValue();
 
-            cryptoDataProvider.validateCoinName(cryptoScreenDto.getAssetName(), apiKey);
+            cryptoDataProvider.validateCoinName(cryptoScreenDto.getAssetName().toLowerCase(), apiKey);
             return;
         }
 

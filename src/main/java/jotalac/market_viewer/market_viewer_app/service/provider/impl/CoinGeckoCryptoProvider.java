@@ -69,7 +69,7 @@ public class CoinGeckoCryptoProvider implements CryptoDataProvider {
                         .path("/coins/{id}/market_chart")
                         .queryParam("vs_currency", currency)
                         .queryParam("days", timeFrame.convertToDays())
-                        .build(assetName))
+                        .build(assetName.toLowerCase()))
                 .header("x-cg-demo-api-key", apiKey)
                 .retrieve()
                 //handle any error
@@ -131,6 +131,7 @@ public class CoinGeckoCryptoProvider implements CryptoDataProvider {
         if (res.getStatusCode().value() == 429) {
             throw new ApiRateLimitExceededException("CoinGecko rate limit exceeded");
         }
+        log.warn(req.getURI().toString());
         throw new ApiResponseError("CoinGecko API Error [" + res.getStatusCode() + "]: " + res.getBody());
     }
 }
