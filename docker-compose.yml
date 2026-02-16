@@ -20,8 +20,6 @@ services:
     build: .
     image: market-viewer:v1
     container_name: market_viewer_app
-    ports:
-      - "8080:8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -35,6 +33,13 @@ services:
 
       # dont start the development database
       - SPRING_DOCKER_COMPOSE_ENABLED=false
+    networks:
+      - global-web
+
+
+networks:
+  global-web:
+    external: true
 
 volumes:
   db_data:
