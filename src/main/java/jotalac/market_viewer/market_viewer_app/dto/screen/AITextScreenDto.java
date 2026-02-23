@@ -18,9 +18,6 @@ public class AITextScreenDto extends ScreenDto {
     @Size(min = 5, max = 500, message = "Prompt size is not valid")
     private String prompt;
 
-    @Pattern(regexp = "^0x[0-9a-fA-F]{4}", message = "Invalid RGB565 HEX color")
-    private String bgColor = DEFAULT_BG_COLOR;
-
     @Min(value = 1, message = "Minimal fetch interval is 1 hour")
     private Integer fetchIntervalHours;
 

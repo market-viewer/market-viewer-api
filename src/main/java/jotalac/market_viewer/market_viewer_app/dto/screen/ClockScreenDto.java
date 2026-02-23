@@ -19,9 +19,6 @@ public class ClockScreenDto extends ScreenDto {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String timezoneCode;
 
-    @Pattern(regexp = "^0x[0-9a-fA-F]{4}", message = "Invalid RGB565 HEX color")
-    private String bgColor;
-
     private ClockType clockType;
     private TimeFormat timeFormat;
 

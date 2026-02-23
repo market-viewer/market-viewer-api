@@ -21,9 +21,6 @@ public class ClockScreen extends Screen {
     private String timezone = "Europe/London";
 
     @Column(nullable = false)
-    private String bgColor = DEFAULT_BG_COLOR;
-
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ClockType clockType = ClockType.ANALOG;
 

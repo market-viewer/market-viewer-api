@@ -20,14 +20,11 @@ import static jotalac.market_viewer.market_viewer_app.config.Constants.DEFAULT_B
 @Setter
 public class AITextScreen extends Screen implements UpdatableScreen{
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String prompt = "Tell me today's news about bitcoin";
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String displayText = "";
-
-    @Column(nullable = false)
-    private String bgColor = DEFAULT_BG_COLOR;
 
     // fetch interval in hours
     @Column(nullable = false)

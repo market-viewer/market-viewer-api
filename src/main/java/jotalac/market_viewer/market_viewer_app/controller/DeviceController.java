@@ -51,7 +51,7 @@ public class DeviceController {
     @DeleteMapping("/{deviceId}/screen/{screenId}")
     public ResponseEntity<MessageResponse> removeScreen(@PathVariable Integer deviceId, @PathVariable Integer screenId, Principal principal) {
         deviceService.removeScreen(deviceId, screenId, principal.getName());
-        return ResponseEntity.status(HttpStatus.CREATED).body(new MessageResponse("Screen removed successfully"));
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @GetMapping("/{deviceId}/screen")

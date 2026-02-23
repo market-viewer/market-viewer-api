@@ -53,12 +53,8 @@ public class CryptoScreenRefreshService {
         //check if we need to fetch graph data
         LocalDateTime lastGraphFetchTime = cryptoScreenPriceData.getFetchTimeGraph();
         if (
-                cryptoScreen.getDisplayGraph() &&
-                (
-                    lastGraphFetchTime == null || cryptoScreenPriceData.getFetchTimeGraph()
-                        .plusMinutes(GRAPH_DATA_LIFETIME_MINUTES)
-                        .isBefore(LocalDateTime.now())
-                )
+            lastGraphFetchTime == null ||
+            cryptoScreenPriceData.getFetchTimeGraph().plusMinutes(GRAPH_DATA_LIFETIME_MINUTES).isBefore(LocalDateTime.now())
         )
         {
             List<Double> newGraphData = cryptoDataProvider.fetchCryptoGraphData(
