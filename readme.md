@@ -1,10 +1,8 @@
-# Web application for market viewer device
+# Backend API for market viewer device
+
+### Project is still WIP
 
 - env file template
 ```dotenv
-ENCRYPT_PASSWORD=
-ENCRYPT_SALT=
-
-#configuation
-SHOW_ERROR_TRACE=always
+...
 ```
