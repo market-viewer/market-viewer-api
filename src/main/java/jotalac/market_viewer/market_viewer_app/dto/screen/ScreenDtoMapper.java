@@ -19,6 +19,7 @@ public interface ScreenDtoMapper {
         if (screen instanceof ClockScreen s) return toClockDto(s);
         if (screen instanceof CryptoScreen s) return toCryptoDto(s);
         if (screen instanceof StockScreen s) return toStockDto(s);
+        if (screen instanceof TimerScreen s) return toTimerDto(s);
         return null;
     }
 
@@ -27,6 +28,7 @@ public interface ScreenDtoMapper {
     AITextScreenDto toAITextDto(AITextScreen screen);
     CryptoScreenDto toCryptoDto(CryptoScreen screen);
     StockScreenDto toStockDto(StockScreen screen);
+    TimerScreenDto toTimerDto(TimerScreen screen);
 
     @Mapping(target = "timezoneCode", source = "timezone", qualifiedByName = "getTimezoneCode")
     ClockScreenDto toClockDto(ClockScreen screen);
@@ -50,7 +52,9 @@ public interface ScreenDtoMapper {
                 updateStock(d, e);
                 //on update reset the data
                 e.setPriceData(new StockPriceData());
-
+            }
+            case TimerScreenDto d when entity instanceof TimerScreen e -> {
+                updateTimer(d, e);
             }
             default -> {
                 throw new IllegalArgumentException("Screen update data do not match screen type");
@@ -82,11 +86,16 @@ public interface ScreenDtoMapper {
     @Mapping(target = "priceData", ignore = true)     // Read-only field
     void updateStock(StockScreenDto dto, @MappingTarget StockScreen entity);
 
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "device", ignore = true)
+    void updateTimer(TimerScreenDto dto, @MappingTarget TimerScreen entity);
+
     default Screen toEntity(ScreenDto dto) {
         if (dto instanceof AITextScreenDto d) return toAITextEntity(d);
         if (dto instanceof ClockScreenDto d) return toClockEntity(d);
         if (dto instanceof CryptoScreenDto d) return toCryptoEntity(d);
         if (dto instanceof StockScreenDto d) return toStockEntity(d);
+        if (dto instanceof TimerScreenDto d) return toTimerEntity(d);
         throw new IllegalArgumentException("Unknown Screen DTO type: " + dto.getClass().getName());
     }
 
@@ -111,6 +120,12 @@ public interface ScreenDtoMapper {
     default StockScreen toStockEntity(StockScreenDto dto) {
         StockScreen entity = new StockScreen();
         updateStock(dto, entity);
+        return entity;
+    }
+
+    default TimerScreen toTimerEntity(TimerScreenDto dto) {
+        TimerScreen entity = new TimerScreen();
+        updateTimer(dto, entity);
         return entity;
     }
 

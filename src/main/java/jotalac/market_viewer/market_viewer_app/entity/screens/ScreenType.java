@@ -4,6 +4,7 @@ public enum ScreenType {
     CRYPTO,
     STOCK,
     CLOCK,
+    TIMER,
     AI_TEXT;
 
     public static ScreenType fromString(String type) {

@@ -115,6 +115,7 @@ public class DeviceService {
             throw new DeviceScreenLimitExceeded("Screen limit exceeded");
         }
 
+        log.info("Screen type here: {}", screenDto.getScreenType());
         if (!userHasRequiredApiKeys(user, screenDto.getScreenType())) {
             throw new MissingApiKey("Missing required api key for: " + screenDto.getScreenType());
         }

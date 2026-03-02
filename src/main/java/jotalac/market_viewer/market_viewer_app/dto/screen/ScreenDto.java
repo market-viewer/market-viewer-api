@@ -17,7 +17,8 @@ import lombok.Setter;
         @JsonSubTypes.Type(value = AITextScreenDto.class, name = "AI_TEXT"),
         @JsonSubTypes.Type(value = ClockScreenDto.class, name = "CLOCK"),
         @JsonSubTypes.Type(value = CryptoScreenDto.class, name = "CRYPTO"),
-        @JsonSubTypes.Type(value = StockScreenDto.class, name = "STOCK")
+        @JsonSubTypes.Type(value = StockScreenDto.class, name = "STOCK"),
+        @JsonSubTypes.Type(value = TimerScreenDto.class, name = "TIMER")
 })
 @Getter
 @Setter
