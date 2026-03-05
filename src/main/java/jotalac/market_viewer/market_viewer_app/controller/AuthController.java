@@ -1,13 +1,9 @@
 package jotalac.market_viewer.market_viewer_app.controller;
 
 import jakarta.validation.Valid;
-import jotalac.market_viewer.market_viewer_app.dto.auth.LoginRequestDto;
-import jotalac.market_viewer.market_viewer_app.dto.auth.LoginResponseDto;
-import jotalac.market_viewer.market_viewer_app.dto.auth.RegisterRequestDto;
-import jotalac.market_viewer.market_viewer_app.dto.auth.RegisterResponseDto;
-import jotalac.market_viewer.market_viewer_app.dto.user.UserDto;
+import jotalac.market_viewer.market_viewer_app.dto.MessageResponse;
+import jotalac.market_viewer.market_viewer_app.dto.auth.*;
 import jotalac.market_viewer.market_viewer_app.dto.user.UserDtoMapper;
-import jotalac.market_viewer.market_viewer_app.entity.User;
 import jotalac.market_viewer.market_viewer_app.service.UserService;
 import jotalac.market_viewer.market_viewer_app.service.auth.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +36,13 @@ public class AuthController {
         LoginResponseDto loginResponse = authService.login(loginRequestDto);
 
         return  ResponseEntity.status(HttpStatus.OK).body(loginResponse);
+    }
+
+    @PostMapping("/recover")
+    public ResponseEntity<MessageResponse> recover(@Valid @RequestBody RecoverRequestDto recoverRequestDto) {
+        authService.recoverAccount(recoverRequestDto);
+
+        return ResponseEntity.status(HttpStatus.OK).body(new MessageResponse("Password updated successfully"));
     }
 
 }

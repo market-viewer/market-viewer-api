@@ -1,11 +1,10 @@
 package jotalac.market_viewer.market_viewer_app.service.auth;
 
 
-import jotalac.market_viewer.market_viewer_app.dto.auth.LoginRequestDto;
-import jotalac.market_viewer.market_viewer_app.dto.auth.LoginResponseDto;
-import jotalac.market_viewer.market_viewer_app.dto.auth.RegisterRequestDto;
-import jotalac.market_viewer.market_viewer_app.dto.auth.RegisterResponseDto;
+import jotalac.market_viewer.market_viewer_app.dto.auth.*;
 import jotalac.market_viewer.market_viewer_app.entity.User;
+import jotalac.market_viewer.market_viewer_app.exception.NotFoundException;
+import jotalac.market_viewer.market_viewer_app.exception.auth.AccountRecoverException;
 import jotalac.market_viewer.market_viewer_app.exception.auth.LoginException;
 import jotalac.market_viewer.market_viewer_app.exception.auth.RegisterException;
 import jotalac.market_viewer.market_viewer_app.exception.user.UserAlreadyExistsException;
@@ -72,6 +71,25 @@ public class AuthService {
             log.info(e.getMessage());
             throw new LoginException("Invalid username or password");
         }
+    }
+
+    @Transactional
+    public void recoverAccount(RecoverRequestDto recoverDto) {
+        //check if password match
+        if (!recoverDto.newPassword().equals(recoverDto.newPasswordRepeat())) {
+            throw new AccountRecoverException("Passwords do not match");
+        }
+
+        //check if the recovery code is valid
+        User user = userRepository.findByUsername(recoverDto.username()).orElseThrow(() -> new NotFoundException("Invalid username or recovery code"));
+
+        if (!recoveryCodeService.validateAndUseCode(user, recoverDto.recoverCode())) {
+            throw new AccountRecoverException("Invalid username or recovery code");
+        }
+
+        //change the password
+        String hashedPassword = passwordEncoder.encode(recoverDto.newPassword());
+        user.setPassword(hashedPassword);
     }
 
     private void checkUserExists(String username) {
