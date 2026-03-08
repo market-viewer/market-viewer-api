@@ -7,6 +7,8 @@ import jotalac.market_viewer.market_viewer_app.entity.screens.ScreenType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import static jotalac.market_viewer.market_viewer_app.config.Constants.DEFAULT_BG_COLOR;
 
@@ -15,6 +17,8 @@ import static jotalac.market_viewer.market_viewer_app.config.Constants.DEFAULT_B
 @Getter
 @Setter
 @NoArgsConstructor
+@OnDelete(action = OnDeleteAction.CASCADE)
+@PrimaryKeyJoinColumn
 public class ClockScreen extends Screen {
 
     @Column(nullable = false)

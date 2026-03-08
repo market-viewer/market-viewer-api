@@ -2,6 +2,9 @@ package jotalac.market_viewer.market_viewer_app.service.auth;
 
 
 import jotalac.market_viewer.market_viewer_app.dto.auth.*;
+import jotalac.market_viewer.market_viewer_app.dto.user.UserDto;
+import jotalac.market_viewer.market_viewer_app.dto.user.UserDtoMapper;
+import jotalac.market_viewer.market_viewer_app.entity.OAuthProvider;
 import jotalac.market_viewer.market_viewer_app.entity.User;
 import jotalac.market_viewer.market_viewer_app.exception.NotFoundException;
 import jotalac.market_viewer.market_viewer_app.exception.auth.AccountRecoverException;
@@ -12,6 +15,8 @@ import jotalac.market_viewer.market_viewer_app.repository.RecoveryCodeRepository
 import jotalac.market_viewer.market_viewer_app.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -21,6 +26,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -29,10 +37,10 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final RecoveryCodeRepository recoveryCodeRepository;
     private final RecoveryCodeService recoveryCodeService;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final UserDtoMapper userDtoMapper;
 
 
     @Transactional
@@ -96,6 +104,38 @@ public class AuthService {
         if (userRepository.existsByUsername(username)) {
             throw new UserAlreadyExistsException("User with username '" + username + "' already exists");
         }
+    }
+
+    // get user or register user if not already exists
+    @Transactional
+    public User findOrCreateOAuthUser(String providerUsername, OAuthProvider provider, String providerId) {
+        Optional<User> existing = userRepository.findByOauthProviderAndOauthProviderId(provider, providerId);
+
+        if (existing.isPresent()) {
+            User user = existing.get();
+
+            //synch name with github if necessary
+            if (!providerUsername.equals(user.getUsername()) && !userRepository.existsByUsername(providerUsername)) {
+                user.setUsername(providerUsername);
+            }
+
+            return user;
+        }
+
+        // create new oauth user
+        String username = providerUsername;
+        if (userRepository.existsByUsername(username)) {
+            String randomSuffix = UUID.randomUUID().toString().substring(0, 4);
+            username = username + "_" + randomSuffix;
+        }
+
+        User newUser = new User();
+        newUser.setUsername(username);
+        newUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+        newUser.setOauthProvider(provider);
+        newUser.setOauthProviderId(providerId);
+
+        return userRepository.save(newUser);
     }
 
 }

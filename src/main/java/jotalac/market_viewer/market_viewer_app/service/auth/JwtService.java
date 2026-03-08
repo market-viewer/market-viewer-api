@@ -31,10 +31,10 @@ public class JwtService {
 
     private String createToken(Map<String, Object> claims, String username) {
         return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(username)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION))
+                .claims(claims)
+                .subject(username)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION))
                 .signWith(getSignKey())
                 .compact();
     }
@@ -59,11 +59,11 @@ public class JwtService {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSignKey())
+        return Jwts.parser()
+                .verifyWith(getSignKey())
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
     private Boolean isTokenExpired(String token) {

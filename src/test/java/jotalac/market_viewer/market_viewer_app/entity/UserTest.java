@@ -27,21 +27,18 @@ class UserTest {
     void shouldCreateUserWithValidFields() {
         User user = new User();
         user.setUsername("testuser");
-        user.setEmail("test@example.com");
         user.setPassword("securepassword");
 
         assertEquals("testuser", user.getUsername());
-        assertEquals("test@example.com", user.getEmail());
         assertEquals("securepassword", user.getPassword());
     }
 
     @Test
     @DisplayName("User constructor should initialize fields correctly")
     void shouldInitializeFieldsViaConstructor() {
-        User user = new User("testuser", "test@example.com", "securepassword");
+        User user = new User("testuser", "securepassword");
 
         assertEquals("testuser", user.getUsername());
-        assertEquals("test@example.com", user.getEmail());
         assertEquals("securepassword", user.getPassword());
     }
 

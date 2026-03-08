@@ -7,6 +7,8 @@ import jotalac.market_viewer.market_viewer_app.entity.Device;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -20,6 +22,7 @@ public abstract class Screen extends AbstractEntity {
     @Getter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "device_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     protected Device device;
 
     @Setter

@@ -99,9 +99,6 @@ public class DeviceService {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
         Device device = deviceRepository.findByIdAndUser(deviceId, user).orElseThrow(() -> new NotFoundException("Device not found"));
 
-        // delete all screens depending on the device
-        screenRepository.deleteByDevice(device);
-
         deviceRepository.delete(device);
     }
 

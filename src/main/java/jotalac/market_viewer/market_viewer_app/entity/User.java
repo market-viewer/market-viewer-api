@@ -7,12 +7,15 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 @Entity
 @Getter
 @Setter
-@Table(name = "users")
+@Table(name = "app_user",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"oauth_provider", "oauth_provider_id"})
+)
 @NoArgsConstructor
 @AllArgsConstructor
 public class User extends AbstractEntity {
@@ -26,11 +29,15 @@ public class User extends AbstractEntity {
     @Column(nullable = false, unique = true)
     private String username;
 
-    @Column(unique = true)
-    private String email;
-
     @Basic(optional = false)
     @Column(nullable = false)
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "oauth_provider")
+    private OAuthProvider oauthProvider;
+
+    @Column(name = "oauth_provider_id")
+    private String oauthProviderId;
 
 }

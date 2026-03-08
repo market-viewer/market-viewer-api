@@ -54,4 +54,10 @@ public class UserController {
         return ResponseEntity.ok(userDevices);
     }
 
+    @DeleteMapping
+    public ResponseEntity<MessageResponse> deleteAccount(Principal principal) {
+        userService.deleteUser(principal.getName());
+        return ResponseEntity.ok(new MessageResponse("Account deleted"));
+    }
+
 }

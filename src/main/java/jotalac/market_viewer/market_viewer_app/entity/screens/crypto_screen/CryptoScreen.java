@@ -11,6 +11,8 @@ import jotalac.market_viewer.market_viewer_app.entity.screens.UpdatableScreen;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 
@@ -21,6 +23,8 @@ import static jotalac.market_viewer.market_viewer_app.config.Constants.PRICE_DAT
 @Getter
 @Setter
 @NoArgsConstructor
+@OnDelete(action = OnDeleteAction.CASCADE)
+@PrimaryKeyJoinColumn
 public class CryptoScreen extends Screen implements UpdatableScreen {
 
     // list of all asset names - /coins/list

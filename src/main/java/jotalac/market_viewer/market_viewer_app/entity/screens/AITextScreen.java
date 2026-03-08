@@ -3,10 +3,13 @@ package jotalac.market_viewer.market_viewer_app.entity.screens;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 
@@ -18,6 +21,8 @@ import static jotalac.market_viewer.market_viewer_app.config.Constants.DEFAULT_B
 @NoArgsConstructor
 @Getter
 @Setter
+@OnDelete(action = OnDeleteAction.CASCADE)
+@PrimaryKeyJoinColumn
 public class AITextScreen extends Screen implements UpdatableScreen{
 
     @Column(nullable = false, columnDefinition = "TEXT")

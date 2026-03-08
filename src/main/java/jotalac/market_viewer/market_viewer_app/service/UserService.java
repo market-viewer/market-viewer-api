@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
@@ -43,9 +44,17 @@ public class UserService implements UserDetailsService {
     private final DeviceRepository deviceRepository;
     private final ScreenRepository screenRepository;
 
+    private final String userNotFoundMsg = "User not found";
+
+    @Transactional
+    public void deleteUser(String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException(userNotFoundMsg));
+        userRepository.delete(user);
+    }
+
     @Transactional
     public boolean saveUserApiKey(ApiKeyCreateDto apiKeyCreateDto, String username) {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException(userNotFoundMsg));
 
         //validate if the key is valid
         validateApiKey(apiKeyCreateDto);
@@ -66,7 +75,7 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public void deleteUserApiKey(ApiKeyProvider apiKeyProvider, String username) {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException(userNotFoundMsg));
 
         ApiKey apiKey = apiKeyRepository
                 .findByEndpointAndUser(apiKeyProvider, user)
@@ -77,7 +86,7 @@ public class UserService implements UserDetailsService {
 
     @Transactional()
     public List<ApiKeyDto> getUserApiKeys(String username) {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException(userNotFoundMsg));
 
         List<ApiKey> userApiKeys = apiKeyRepository.findByUser(user);
 
@@ -86,7 +95,7 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public List<DeviceDto> getUserDevices(String username) {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException(userNotFoundMsg));
 
         return deviceRepository.findDeviceDtosByUser(user);
     }
@@ -109,7 +118,7 @@ public class UserService implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
-        User user =  userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User user =  userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(userNotFoundMsg));
         return buildUserDetails(user);
     }
 

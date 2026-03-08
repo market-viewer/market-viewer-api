@@ -10,7 +10,7 @@ class DeviceTest {
     @Test
     @DisplayName("Device constructor should initialize fields and generate UUID")
     void shouldInitializeDeviceCorrectly() {
-        User user = new User("owner", "owner@example.com", "pass");
+        User user = new User("owner", "pass");
         String deviceName = "Living Room";
 
         Device device = new Device(deviceName, user);
