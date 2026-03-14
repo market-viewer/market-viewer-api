@@ -4,6 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import jotalac.market_viewer.market_viewer_app.dto.api_response.stock_api.StockGraphResponse;
 import jotalac.market_viewer.market_viewer_app.dto.api_response.stock_api.StockPriceResponse;
+import jotalac.market_viewer.market_viewer_app.entity.screens.AssetTimeFrame;
 import jotalac.market_viewer.market_viewer_app.entity.screens.stock_screen.StockPriceData;
 import jotalac.market_viewer.market_viewer_app.exception.api_provider.*;
 import jotalac.market_viewer.market_viewer_app.service.provider.StockDataProvider;
@@ -60,13 +61,15 @@ public class TwelveDataStockProvider implements StockDataProvider {
     }
 
     @Override
-    public List<Double> fetchStockGraphData(String symbol, String interval, Integer outputSize, String apiKey) {
+    public List<Double> fetchStockGraphData(String symbol, AssetTimeFrame assetTimeFrame, String apiKey) {
+        TwelveDataParams params = getTwelveDataParams(assetTimeFrame);
+
         JsonNode response = restClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/time_series")
                         .queryParam("symbol", symbol)
-                        .queryParam("interval", interval)
-                        .queryParam("outputsize", outputSize)
+                        .queryParam("interval", params.interval)
+                        .queryParam("outputsize", params.outputSize)
                         .queryParam("apikey", apiKey)
                         .build()
                 )
@@ -144,6 +147,35 @@ public class TwelveDataStockProvider implements StockDataProvider {
             return false;
         }
         return true;
+    }
+
+    //handle time frames in stock provider
+    @Override
+    public boolean acceptsTimeFrame(AssetTimeFrame assetTimeFrame) {
+        return switch (assetTimeFrame) {
+            case FIVE_MINUTES, HOUR, FIVE_HOUR, DAY, WEEK, TWO_WEEKS, MONTH, YEAR, FIVE_YEARS -> true;
+            default -> false;
+        };
+    }
+
+    private record TwelveDataParams(String interval, int outputSize) {}
+
+    private TwelveDataParams getTwelveDataParams(AssetTimeFrame timeFrame) {
+        return switch (timeFrame) {
+            case FIVE_MINUTES -> new TwelveDataParams("1min", 5);
+            case HOUR -> new TwelveDataParams("1min", 60);
+            case FIVE_HOUR -> new TwelveDataParams("1min", 300);
+            case DAY -> new TwelveDataParams("5min", 78);
+            case WEEK -> new TwelveDataParams("30min", 65);
+            case TWO_WEEKS -> new TwelveDataParams("1h", 65);
+            case MONTH -> new TwelveDataParams("2h", 70);
+            case YEAR -> new TwelveDataParams("1day", 260);
+            case FIVE_YEARS -> new TwelveDataParams("1week", 260);
+            default -> {
+                log.warn("Time frame {} is not supported by TwelveData, defaulting to 1 Day", timeFrame);
+                yield new TwelveDataParams("5min", 78);
+            }
+        };
     }
 
 

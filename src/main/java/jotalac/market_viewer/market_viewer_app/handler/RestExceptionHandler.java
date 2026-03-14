@@ -113,19 +113,4 @@ public class RestExceptionHandler {
 
         return new ErrorResponse(LocalDateTime.now(), "Validation failed: " + detail, request.getRequestURI());
     }
-
-//    @ExceptionHandler(Exception.class)
-//    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-//    public ErrorResponse handleAllUnhandledExceptions(HttpServletRequest request, Exception e) {
-//        // Log the actual error on the server so you can debug it
-//        // logger.error("Unhandled exception: ", e);
-//
-//        // Return a generic response with NO message from the exception
-//        return new ErrorResponse(
-//                LocalDateTime.now(),
-//                "An unexpected error occurred", // Or just leave empty ""
-//                request.getRequestURI()
-//        );
-//    }
-
 }

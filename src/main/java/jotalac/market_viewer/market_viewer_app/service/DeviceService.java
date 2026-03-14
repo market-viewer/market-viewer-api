@@ -12,11 +12,13 @@ import jotalac.market_viewer.market_viewer_app.entity.ApiKeyProvider;
 import jotalac.market_viewer.market_viewer_app.entity.Device;
 import jotalac.market_viewer.market_viewer_app.entity.User;
 import jotalac.market_viewer.market_viewer_app.entity.screens.*;
+import jotalac.market_viewer.market_viewer_app.entity.screens.stock_screen.StockScreen;
 import jotalac.market_viewer.market_viewer_app.exception.AlreadyExistsException;
 import jotalac.market_viewer.market_viewer_app.exception.NotFoundException;
 import jotalac.market_viewer.market_viewer_app.exception.device.DeviceScreenLimitExceeded;
 import jotalac.market_viewer.market_viewer_app.exception.device.ScreenReorderException;
 import jotalac.market_viewer.market_viewer_app.exception.screen.ScreenDoesntBelongToDeviceException;
+import jotalac.market_viewer.market_viewer_app.exception.screen.ScreenUnsupportedTimeFrame;
 import jotalac.market_viewer.market_viewer_app.exception.user.MissingApiKey;
 import jotalac.market_viewer.market_viewer_app.repository.ApiKeyRepository;
 import jotalac.market_viewer.market_viewer_app.repository.DeviceRepository;
@@ -80,6 +82,18 @@ public class DeviceService {
         }
     }
 
+    private void validateTimeFrame(ScreenDto screenDto) {
+        if (screenDto instanceof CryptoScreenDto cryptoScreenDto)  {
+            if (cryptoScreenDto.getTimeFrame() == null) return;
+            if(!cryptoDataProvider.acceptsTimeFrame(cryptoScreenDto.getTimeFrame())) throw new ScreenUnsupportedTimeFrame("Time frame not supported for crypto");
+        }
+
+        if (screenDto instanceof StockScreenDto stockScreenDto) {
+            if (stockScreenDto.getTimeFrame() == null) return;
+            if (!stockDataProvider.acceptsTimeFrame(stockScreenDto.getTimeFrame())) throw new ScreenUnsupportedTimeFrame("Time frame not supported for stock");
+        }
+    }
+
     @Transactional
     public DeviceCreateResponse createDevice(DeviceCreateRequest deviceCreateRequest, String username) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
@@ -117,8 +131,10 @@ public class DeviceService {
             throw new MissingApiKey("Missing required api key for: " + screenDto.getScreenType());
         }
 
-        //validate the asset names if needed
+        //validate the asset names and time frame if
         validateAssetName(screenDto, user);
+        validateTimeFrame(screenDto);
+
 
         Screen newScreen = screenDtoMapper.toEntity(screenDto);
 
@@ -137,6 +153,7 @@ public class DeviceService {
         Screen screen = screenRepository.findByIdAndDevice(screenId, device).orElseThrow(() -> new NotFoundException("Screen not found"));
 
         validateAssetName(screenDto, user);
+        validateTimeFrame(screenDto);
 
         screenDtoMapper.updateEntityFromDto(screenDto, screen);
         screen = screenRepository.save(screen);

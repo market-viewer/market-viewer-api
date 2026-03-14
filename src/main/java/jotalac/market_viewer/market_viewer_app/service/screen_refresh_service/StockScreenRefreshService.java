@@ -4,7 +4,6 @@ import jotalac.market_viewer.market_viewer_app.dto.api_response.stock_api.StockP
 import jotalac.market_viewer.market_viewer_app.entity.ApiKey;
 import jotalac.market_viewer.market_viewer_app.entity.ApiKeyProvider;
 import jotalac.market_viewer.market_viewer_app.entity.screens.stock_screen.StockScreen;
-import jotalac.market_viewer.market_viewer_app.entity.screens.stock_screen.StockTimeFrame;
 import jotalac.market_viewer.market_viewer_app.exception.user.MissingApiKey;
 import jotalac.market_viewer.market_viewer_app.repository.ApiKeyRepository;
 import jotalac.market_viewer.market_viewer_app.service.provider.StockDataProvider;
@@ -49,10 +48,9 @@ public class StockScreenRefreshService {
 
     private void updateGraph(StockScreen stockScreen, String apiKey) {
         var stockPriceData = stockScreen.getPriceData();
-        StockTimeFrame stockTimeFrame = stockScreen.getTimeFrame();
 
         List<Double> newGraphData = stockDataProvider.fetchStockGraphData(
-                stockScreen.getSymbol(), stockTimeFrame.getInterval(), stockTimeFrame.getOutputsize(), apiKey
+                stockScreen.getSymbol(), stockScreen.getTimeFrame(), apiKey
         );
 
         // calculate price change from the current price and last price

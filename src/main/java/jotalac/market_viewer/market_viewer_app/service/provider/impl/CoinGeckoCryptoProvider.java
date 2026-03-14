@@ -4,8 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import jotalac.market_viewer.market_viewer_app.dto.api_response.crypto_api.CryptoGraphResponse;
 import jotalac.market_viewer.market_viewer_app.dto.api_response.crypto_api.CryptoPriceResponse;
-import jotalac.market_viewer.market_viewer_app.entity.screens.crypto_screen.CryptoTimeFrame;
-import jotalac.market_viewer.market_viewer_app.exception.api_provider.ApiKeyNotValid;
+import jotalac.market_viewer.market_viewer_app.entity.screens.AssetTimeFrame;
 import jotalac.market_viewer.market_viewer_app.exception.api_provider.ApiRateLimitExceededException;
 import jotalac.market_viewer.market_viewer_app.exception.api_provider.ApiResponseError;
 import jotalac.market_viewer.market_viewer_app.exception.api_provider.AssetNameNotValid;
@@ -20,7 +19,6 @@ import org.springframework.web.client.RestClient;
 import org.springframework.http.HttpRequest;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 
@@ -38,13 +36,15 @@ public class CoinGeckoCryptoProvider implements CryptoDataProvider {
             .build();
 
     @Override
-    public CryptoPriceResponse fetchCryptoPriceData(String currency, String assetName, CryptoTimeFrame timeFrame, String apiKey) {
+    public CryptoPriceResponse fetchCryptoPriceData(String currency, String assetName, AssetTimeFrame assetTimeFrame, String apiKey) {
+        String timeFrameValue = getPriceChangePercentage(assetTimeFrame);
+
         List<CryptoPriceResponse> responseList = restClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("coins/markets")
                         .queryParam("vs_currency", currency)
                         .queryParam("ids", assetName)
-                        .queryParam("price_change_percentage", timeFrame.getValue())
+                        .queryParam("price_change_percentage", getPriceChangePercentage(assetTimeFrame))
                         .build())
                 .header("x-cg-demo-api-key", apiKey)
                 .retrieve()
@@ -63,12 +63,12 @@ public class CoinGeckoCryptoProvider implements CryptoDataProvider {
     }
 
     @Override
-    public List<Double> fetchCryptoGraphData(String currency, String assetName, CryptoTimeFrame timeFrame, String apiKey) {
+    public List<Double> fetchCryptoGraphData(String currency, String assetName, AssetTimeFrame assetTimeFrame, String apiKey) {
         CryptoGraphResponse response = restClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/coins/{id}/market_chart")
                         .queryParam("vs_currency", currency)
-                        .queryParam("days", timeFrame.convertToDays())
+                        .queryParam("days", getDays(assetTimeFrame))
                         .build(assetName.toLowerCase()))
                 .header("x-cg-demo-api-key", apiKey)
                 .retrieve()
@@ -133,5 +133,47 @@ public class CoinGeckoCryptoProvider implements CryptoDataProvider {
         }
         log.warn(req.getURI().toString());
         throw new ApiResponseError("CoinGecko API Error [" + res.getStatusCode() + "]: " + res.getBody());
+    }
+
+    // helper methods to handle time frames for crypto
+    @Override
+    public boolean acceptsTimeFrame(AssetTimeFrame assetTimeFrame) {
+        return switch (assetTimeFrame) {
+            case HOUR, DAY, WEEK, TWO_WEEKS, MONTH, TWO_HUNDRED_DAYS, YEAR -> true;
+            default -> false;
+        };
+    }
+
+
+    private String getPriceChangePercentage(AssetTimeFrame timeFrame) {
+        return switch (timeFrame) {
+            case HOUR -> "1h";
+            case DAY -> "24h";
+            case WEEK -> "7d";
+            case TWO_WEEKS -> "14d";
+            case MONTH -> "30d";
+            case TWO_HUNDRED_DAYS -> "200d";
+            case YEAR -> "1y";
+            default -> {
+                log.warn("Time frame {} is not supported by CoinGecko (Price Change), defaulting to 24h", timeFrame);
+                yield "24h";
+            }
+        };
+
+    }
+
+    private String getDays(AssetTimeFrame timeFrame) {
+        return switch (timeFrame) {
+            case HOUR, DAY -> "1";
+            case WEEK -> "7";
+            case TWO_WEEKS -> "14";
+            case MONTH -> "30";
+            case TWO_HUNDRED_DAYS -> "200";
+            case YEAR -> "365";
+            default -> {
+                log.warn("Time frame {} is not supported by CoinGecko (Graph), defaulting to 1 day", timeFrame);
+                yield "1";
+            }
+        };
     }
 }
