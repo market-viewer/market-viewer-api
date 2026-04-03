@@ -20,8 +20,8 @@ services:
   # Application Service
   market-viewer-app:
     build: .
-    image: market-viewer:v1
-    container_name: market_viewer_app
+    image: market-viewer
+    container_name: market_viewer_api
     depends_on:
       postgres:
         condition: service_healthy
