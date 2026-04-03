@@ -59,8 +59,8 @@ The API will be available at `http://localhost:8080`.
 ---
 ### API docs
 
-Full interactive docs available at `https://market-viewer.jotalac.dev/api/swagger-ui/index.html`.
-- or `http://localhost:8080/api/swagger-ui/index.html` - when you run the app locally
+Full interactive docs available at `https://api.market-viewer.jotalac.dev/swagger-ui/index.html`.
+- or `http://localhost:8080/swagger-ui/index.html` - when you run the app locally
 
 ---
 
