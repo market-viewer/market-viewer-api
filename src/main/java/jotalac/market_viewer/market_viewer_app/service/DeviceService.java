@@ -1,9 +1,7 @@
 package jotalac.market_viewer.market_viewer_app.service;
 
 import jakarta.transaction.Transactional;
-import jotalac.market_viewer.market_viewer_app.dto.device.DeviceCreateRequest;
-import jotalac.market_viewer.market_viewer_app.dto.device.DeviceCreateResponse;
-import jotalac.market_viewer.market_viewer_app.dto.device.ReorderScreensRequest;
+import jotalac.market_viewer.market_viewer_app.dto.device.*;
 import jotalac.market_viewer.market_viewer_app.dto.screen.CryptoScreenDto;
 import jotalac.market_viewer.market_viewer_app.dto.screen.ScreenDto;
 import jotalac.market_viewer.market_viewer_app.dto.screen.ScreenDtoMapper;
@@ -46,7 +44,7 @@ public class DeviceService {
     private final DeviceRepository deviceRepository;
     private final UserRepository userRepository;
     private final ScreenRepository screenRepository;
-    private final UserService userService;
+    private final DeviceDtoMapper deviceDtoMapper;
     private final ScreenDtoMapper screenDtoMapper;
     private final ApiKeyRepository apiKeyRepository;
     private final CryptoDataProvider cryptoDataProvider;
@@ -92,6 +90,15 @@ public class DeviceService {
             if (stockScreenDto.getTimeFrame() == null) return;
             if (!stockDataProvider.acceptsTimeFrame(stockScreenDto.getTimeFrame())) throw new ScreenUnsupportedTimeFrame("Time frame not supported for stock");
         }
+    }
+
+    @Transactional
+    public List<DeviceDto> getAllDevices(String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
+
+        List<Device> deviceList = deviceRepository.findByUser(user);
+
+        return deviceDtoMapper.toDtoList(deviceList);
     }
 
     @Transactional
