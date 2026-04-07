@@ -93,13 +93,6 @@ public class UserService implements UserDetailsService {
         return apiKeyDtoMapper.toDtoList(userApiKeys);
     }
 
-    @Transactional
-    public List<DeviceDto> getUserDevices(String username) {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException(userNotFoundMsg));
-
-        return deviceRepository.findDeviceDtosByUser(user);
-    }
-
     private void validateApiKey(ApiKeyCreateDto apiKeyCreateDto) {
         switch (apiKeyCreateDto.endpoint()) {
             case COINGECKO -> {

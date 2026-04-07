@@ -48,12 +48,6 @@ public class UserController {
         return ResponseEntity.ok(new MessageResponse("API Key deleted"));
     }
 
-    @GetMapping("/device")
-    public ResponseEntity<List<DeviceDto>> getAllDevices(Principal principal) {
-        List<DeviceDto> userDevices = userService.getUserDevices(principal.getName());
-        return ResponseEntity.ok(userDevices);
-    }
-
     @DeleteMapping
     public ResponseEntity<MessageResponse> deleteAccount(Principal principal) {
         userService.deleteUser(principal.getName());

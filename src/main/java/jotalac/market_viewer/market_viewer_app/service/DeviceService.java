@@ -96,9 +96,16 @@ public class DeviceService {
     public List<DeviceDto> getAllDevices(String username) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
 
-        List<Device> deviceList = deviceRepository.findByUser(user);
+        return deviceRepository.findDeviceDtosByUser(user);
+    }
 
-        return deviceDtoMapper.toDtoList(deviceList);
+    @Transactional
+    public DeviceNameHashDto getDeviceNameAndHash(Integer deviceId, String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
+
+        Device foundDevice = deviceRepository.findByIdAndUser(deviceId, user).orElseThrow(() -> new NotFoundException("Device not found"));
+
+        return new DeviceNameHashDto(foundDevice.getName(), foundDevice.getDeviceHash().toString());
     }
 
     @Transactional

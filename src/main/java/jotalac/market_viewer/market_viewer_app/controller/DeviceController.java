@@ -2,10 +2,7 @@ package jotalac.market_viewer.market_viewer_app.controller;
 
 import jakarta.validation.Valid;
 import jotalac.market_viewer.market_viewer_app.dto.MessageResponse;
-import jotalac.market_viewer.market_viewer_app.dto.device.DeviceCreateRequest;
-import jotalac.market_viewer.market_viewer_app.dto.device.DeviceCreateResponse;
-import jotalac.market_viewer.market_viewer_app.dto.device.DeviceDto;
-import jotalac.market_viewer.market_viewer_app.dto.device.ReorderScreensRequest;
+import jotalac.market_viewer.market_viewer_app.dto.device.*;
 import jotalac.market_viewer.market_viewer_app.dto.screen.ScreenDto;
 import jotalac.market_viewer.market_viewer_app.service.DeviceService;
 import org.springframework.http.HttpStatus;
@@ -67,6 +64,13 @@ public class DeviceController {
         List<DeviceDto> userDevices = deviceService.getAllDevices(principal.getName());
 
         return ResponseEntity.status(HttpStatus.OK).body(userDevices);
+    }
+
+    @GetMapping("/{deviceId}")
+    public ResponseEntity<DeviceNameHashDto> getSingleDevice(@PathVariable Integer deviceId, Principal principal) {
+        DeviceNameHashDto deviceDetails = deviceService.getDeviceNameAndHash(deviceId, principal.getName());
+
+        return ResponseEntity.status(HttpStatus.OK).body(deviceDetails);
     }
 
     @PatchMapping("{deviceId}/screen/order")
