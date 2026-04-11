@@ -27,6 +27,7 @@ public class Device extends AbstractEntity {
     @Column(unique = true, nullable = false)
     private UUID deviceHash;
 
+    @Setter
     @Column(nullable = false)
     private String name;
 

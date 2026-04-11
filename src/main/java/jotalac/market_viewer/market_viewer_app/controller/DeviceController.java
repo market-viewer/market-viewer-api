@@ -23,8 +23,8 @@ public class DeviceController {
     }
 
     @PostMapping
-    public ResponseEntity<DeviceCreateResponse> createDevice(@Valid @RequestBody DeviceCreateRequest deviceCreateRequest, Principal principal) {
-        DeviceCreateResponse deviceCreateResponse = deviceService.createDevice(deviceCreateRequest, principal.getName());
+    public ResponseEntity<DeviceCreateResponse> createDevice(@Valid @RequestBody DeviceNameDto deviceNameDto, Principal principal) {
+        DeviceCreateResponse deviceCreateResponse = deviceService.createDevice(deviceNameDto, principal.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(deviceCreateResponse);
     }
 
@@ -38,6 +38,12 @@ public class DeviceController {
     public ResponseEntity<ScreenDto> addScreen(@PathVariable Integer deviceId, @Valid @RequestBody ScreenDto screenDto, Principal principal) {
         ScreenDto newScreen = deviceService.addScreen(deviceId, screenDto, principal.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(newScreen);
+    }
+
+    @PatchMapping("/{deviceId}/name")
+    public ResponseEntity<DeviceNameDto> changeName(@PathVariable Integer deviceId, @Valid @RequestBody DeviceNameDto deviceNameDto,  Principal principal) {
+        deviceService.changeDeviceName(deviceId, principal.getName(), deviceNameDto.name());
+        return ResponseEntity.status(HttpStatus.OK).body(deviceNameDto);
     }
 
     @PutMapping("{deviceId}/screen/{screenId}")

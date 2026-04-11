@@ -10,12 +10,10 @@ import jotalac.market_viewer.market_viewer_app.entity.ApiKeyProvider;
 import jotalac.market_viewer.market_viewer_app.entity.Device;
 import jotalac.market_viewer.market_viewer_app.entity.User;
 import jotalac.market_viewer.market_viewer_app.entity.screens.*;
-import jotalac.market_viewer.market_viewer_app.entity.screens.stock_screen.StockScreen;
 import jotalac.market_viewer.market_viewer_app.exception.AlreadyExistsException;
 import jotalac.market_viewer.market_viewer_app.exception.NotFoundException;
 import jotalac.market_viewer.market_viewer_app.exception.device.DeviceScreenLimitExceeded;
 import jotalac.market_viewer.market_viewer_app.exception.device.ScreenReorderException;
-import jotalac.market_viewer.market_viewer_app.exception.screen.ScreenDoesntBelongToDeviceException;
 import jotalac.market_viewer.market_viewer_app.exception.screen.ScreenUnsupportedTimeFrame;
 import jotalac.market_viewer.market_viewer_app.exception.user.MissingApiKey;
 import jotalac.market_viewer.market_viewer_app.repository.ApiKeyRepository;
@@ -44,7 +42,6 @@ public class DeviceService {
     private final DeviceRepository deviceRepository;
     private final UserRepository userRepository;
     private final ScreenRepository screenRepository;
-    private final DeviceDtoMapper deviceDtoMapper;
     private final ScreenDtoMapper screenDtoMapper;
     private final ApiKeyRepository apiKeyRepository;
     private final CryptoDataProvider cryptoDataProvider;
@@ -109,14 +106,14 @@ public class DeviceService {
     }
 
     @Transactional
-    public DeviceCreateResponse createDevice(DeviceCreateRequest deviceCreateRequest, String username) {
+    public DeviceCreateResponse createDevice(DeviceNameDto deviceNameDto, String username) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
         //check new device name doesn't already exist
-        if (deviceRepository.existsByUserIdAndName(user.getId(), deviceCreateRequest.name())) {
-            throw new AlreadyExistsException("Device with name - '" + deviceCreateRequest.name() + "' already exists on your account");
+        if (deviceRepository.existsByUserIdAndName(user.getId(), deviceNameDto.name())) {
+            throw new AlreadyExistsException("Device with name - '" + deviceNameDto.name() + "' already exists on your account");
         }
 
-        Device newDevice = new Device(deviceCreateRequest.name(), user);
+        Device newDevice = new Device(deviceNameDto.name(), user);
         deviceRepository.save(newDevice);
 
         return new DeviceCreateResponse(newDevice.getId(), newDevice.getDeviceHash());
@@ -188,9 +185,23 @@ public class DeviceService {
         screenRepository.changeIndicesAfterDelete(deviceId, screenIndex);
     }
 
+    @Transactional
+    public void changeDeviceName(Integer deviceId, String username, String newNameRequest) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
+        Device device = deviceRepository.findByIdAndUser(deviceId, user).orElseThrow(() -> new NotFoundException("Device not found"));
 
-    private boolean screenBelongsToDevice(Screen screen, Device device) {
-        return screen.getDevice().getId().equals(device.getId());
+        String newName = newNameRequest.trim();
+
+        //check if new name is present
+        if (newName.isEmpty()) {throw new IllegalArgumentException("Device name cannot be empty");}
+        //dont do anything if new name is same as old name
+        if (newName.equals(device.getName())) {return;}
+        //check if user already have this name on some other device
+        if (deviceRepository.existsByUserIdAndName(user.getId(), newName)) {
+            throw new AlreadyExistsException("Device with name - '" + newName + "' already exists on your account");
+        }
+
+        device.setName(newName);
     }
 
     @Transactional

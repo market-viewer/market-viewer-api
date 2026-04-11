@@ -32,10 +32,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-cache")
 
-    implementation("org.springframework.security:spring-security-oauth2-client")
-
     implementation(platform("me.paulschwarz:spring-dotenv-bom:5.0.1"))
     implementation("me.paulschwarz:springboot4-dotenv")
+    implementation("io.github.cdimascio:dotenv-java:3.2.0")
 
     //caching
     implementation("com.github.ben-manes.caffeine:caffeine")
@@ -48,8 +47,8 @@ dependencies {
 
     //jwt
     implementation("io.jsonwebtoken:jjwt-api:0.13.0")
-    implementation("io.jsonwebtoken:jjwt-impl:0.13.0")
-    implementation("io.jsonwebtoken:jjwt-jackson:0.13.0")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.13.0")
 
     compileOnly("org.projectlombok:lombok")
 
@@ -66,8 +65,6 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-restclient-test")
     testImplementation("org.springframework.boot:spring-boot-starter-security-oauth2-client-test")
     testImplementation("org.springframework.boot:spring-boot-starter-security-test")
-    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
-
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
 }

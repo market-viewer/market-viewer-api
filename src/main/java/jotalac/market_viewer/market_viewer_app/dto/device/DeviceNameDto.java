@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 
 import static jotalac.market_viewer.market_viewer_app.config.Constants.*;
 
-public record DeviceCreateRequest(
+public record DeviceNameDto(
         @NotBlank
         @Size(min = DEVICE_NAME_MIN_LENGTH, max = DEVICE_NAME_MAX_LENGTH, message = "Name length invalid")
         String name
