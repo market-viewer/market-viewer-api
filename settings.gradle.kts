@@ -1,1 +1,1 @@
-rootProject.name = "market_viewer_app"
+rootProject.name = "market_viewer_api"

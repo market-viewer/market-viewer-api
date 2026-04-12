@@ -6,7 +6,7 @@ plugins {
 
 group = "jotalac.market_viewer"
 version = "0.0.1-SNAPSHOT"
-description = "market_viewer_app"
+description = "market_viewer_api"
 
 java {
     toolchain {

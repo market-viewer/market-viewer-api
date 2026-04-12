@@ -1,0 +1,56 @@
+package jotalac.market_viewer.market_viewer_api.entity.screens;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import jakarta.persistence.PrimaryKeyJoinColumn;
+import jakarta.validation.constraints.Positive;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+import java.time.LocalDateTime;
+
+
+@Entity
+@DiscriminatorValue("AI_TEXT")
+@NoArgsConstructor
+@Getter
+@Setter
+@OnDelete(action = OnDeleteAction.CASCADE)
+@PrimaryKeyJoinColumn
+public class AITextScreen extends Screen implements UpdatableScreen{
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String prompt = "Tell me today's news about bitcoin";
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String displayText = "";
+
+    // fetch interval in hours
+    @Column(nullable = false)
+    @Positive
+    private Integer fetchIntervalHours = 5;
+
+    @Column
+    private LocalDateTime lastFetchTime;
+
+    @Override
+    public ScreenType getScreenType() {
+        return ScreenType.AI_TEXT;
+    }
+
+    @Override
+    public LocalDateTime getLastUpdateTime() {
+        return lastFetchTime;
+    }
+
+    @Override
+    public boolean needsUpdate() {
+        if (displayText.isEmpty() || lastFetchTime == null) return true;
+
+        return lastFetchTime.plusHours(fetchIntervalHours).isBefore(LocalDateTime.now());
+    }
+}
