@@ -68,7 +68,9 @@ public class AuthService {
                 throw new LoginException("Invalid username or password");
             }
 
-            String token = jwtService.generateToken(request.username());
+            User user = userRepository.findByUsername(request.username())
+                    .orElseThrow(() -> new LoginException("Invalid username or password"));
+            String token = jwtService.generateToken(user.getId());
             return new LoginResponseDto(token);
         } catch(AuthenticationException e) {
             log.info(e.getMessage());

@@ -5,7 +5,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -23,16 +22,16 @@ public class JwtService {
     @Value("${JWT_EXPIRATION}")
     public long TOKEN_EXPIRATION;
 
-    public String generateToken(String username) {
+    public String generateToken(Integer userId) {
         //claims are the data inside the token
         Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, username);
+        return createToken(claims, userId);
     }
 
-    private String createToken(Map<String, Object> claims, String username) {
+    private String createToken(Map<String, Object> claims, Integer userId) {
         return Jwts.builder()
                 .claims(claims)
-                .subject(username)
+                .subject(userId.toString())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION))
                 .signWith(getSignKey())
@@ -45,8 +44,8 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+    public Integer extractUserId(String token) {
+        return Integer.valueOf(extractClaim(token, Claims::getSubject));
     }
 
     public Date extractExpiration(String token) {
@@ -70,8 +69,8 @@ public class JwtService {
         return extractExpiration(token).before(new Date());
     }
 
-    public boolean validateToken(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    public boolean validateToken(String token, Integer userId) {
+        final Integer tokenUserId = extractUserId(token);
+        return (userId.equals(tokenUserId) && !isTokenExpired(token));
     }
 }

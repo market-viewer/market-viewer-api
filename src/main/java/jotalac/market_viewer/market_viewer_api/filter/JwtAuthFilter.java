@@ -6,6 +6,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jotalac.market_viewer.market_viewer_api.dto.ErrorResponse;
+import jotalac.market_viewer.market_viewer_api.entity.User;
+import jotalac.market_viewer.market_viewer_api.repository.UserRepository;
 import jotalac.market_viewer.market_viewer_api.service.auth.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -30,7 +31,7 @@ import java.time.LocalDateTime;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService;
+    private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -38,17 +39,21 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         try {
             final String authHeader = request.getHeader("Authorization");
             String jwt = null;
-            String username = null;
+            Integer userId = null;
 
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 jwt = authHeader.substring(7);
-                username = jwtService.extractUsername(jwt);
+                userId = jwtService.extractUserId(jwt);
             }
 
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                User user = userRepository.findById(userId).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+                        .username(user.getUsername())
+                        .password("")
+                        .build();
 
-                if (jwtService.validateToken(jwt, userDetails)) {
+                if (jwtService.validateToken(jwt, user.getId())) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,

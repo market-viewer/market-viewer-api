@@ -38,7 +38,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         User user = authService.findOrCreateOAuthUser(username, provider, providerId);
 
-        String token = jwtService.generateToken(user.getUsername());
+        String token = jwtService.generateToken(user.getId());
 
         getRedirectStrategy().sendRedirect(request, response, frontendUrl+"/oauth2/github/callback?token=" + token);
     }
