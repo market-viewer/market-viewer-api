@@ -91,6 +91,24 @@ public class UserService implements UserDetailsService {
         return apiKeyDtoMapper.toDtoList(userApiKeys);
     }
 
+    @Transactional
+    public String updateUsername(String username, String newUsername) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException(userNotFoundMsg));
+
+        String candidate = newUsername.trim();
+
+        if (user.getUsername().equals(candidate)) {
+            throw new IllegalArgumentException("New username is same as old username");
+        }
+
+        if (userRepository.existsByUsername(candidate)) {
+            throw new IllegalArgumentException("Username is already taken");
+        }
+
+        user.setUsername(candidate);
+        return user.getUsername();
+    }
+
     private void validateApiKey(ApiKeyCreateDto apiKeyCreateDto) {
         switch (apiKeyCreateDto.endpoint()) {
             case COINGECKO -> {

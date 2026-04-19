@@ -6,6 +6,7 @@ import jotalac.market_viewer.market_viewer_api.dto.api_key.ApiKeyCreateDto;
 import jotalac.market_viewer.market_viewer_api.dto.api_key.ApiKeyDeleteDto;
 import jotalac.market_viewer.market_viewer_api.dto.api_key.ApiKeyDto;
 import jotalac.market_viewer.market_viewer_api.dto.user.UserDtoMapper;
+import jotalac.market_viewer.market_viewer_api.dto.user.UsernameUpdateDto;
 import jotalac.market_viewer.market_viewer_api.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -51,5 +52,13 @@ public class UserController {
         userService.deleteUser(principal.getName());
         return ResponseEntity.ok(new MessageResponse("Account deleted"));
     }
+
+    @PatchMapping("/username")
+    public ResponseEntity<UsernameUpdateDto> updateUsername(@Valid @RequestBody UsernameUpdateDto usernameUpdateDto, Principal principal) {
+        String newUsername = userService.updateUsername(principal.getName(), usernameUpdateDto.username());
+
+        return ResponseEntity.ok(new UsernameUpdateDto(newUsername));
+    }
+
 
 }
