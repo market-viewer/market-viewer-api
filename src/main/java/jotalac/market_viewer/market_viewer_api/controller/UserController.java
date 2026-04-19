@@ -6,7 +6,9 @@ import jotalac.market_viewer.market_viewer_api.dto.api_key.ApiKeyCreateDto;
 import jotalac.market_viewer.market_viewer_api.dto.api_key.ApiKeyDeleteDto;
 import jotalac.market_viewer.market_viewer_api.dto.api_key.ApiKeyDto;
 import jotalac.market_viewer.market_viewer_api.dto.user.UserDtoMapper;
+import jotalac.market_viewer.market_viewer_api.dto.user.UsernameAndApiKeysDto;
 import jotalac.market_viewer.market_viewer_api.dto.user.UsernameUpdateDto;
+import jotalac.market_viewer.market_viewer_api.entity.ApiKeyProvider;
 import jotalac.market_viewer.market_viewer_api.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -58,6 +60,14 @@ public class UserController {
         String newUsername = userService.updateUsername(principal.getName(), usernameUpdateDto.username());
 
         return ResponseEntity.ok(new UsernameUpdateDto(newUsername));
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<UsernameAndApiKeysDto> getUserPorfileData(Principal principal) {
+        String username = principal.getName();
+        List<ApiKeyProvider> userApiKeyProviders = userService.getSavedApiKeyProviders(username);
+
+        return ResponseEntity.ok(new UsernameAndApiKeysDto(username, userApiKeyProviders));
     }
 
 

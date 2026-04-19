@@ -4,6 +4,7 @@ import jotalac.market_viewer.market_viewer_api.dto.api_key.ApiKeyCreateDto;
 import jotalac.market_viewer.market_viewer_api.dto.api_key.ApiKeyDto;
 import jotalac.market_viewer.market_viewer_api.dto.api_key.ApiKeyDtoMapper;
 import jotalac.market_viewer.market_viewer_api.dto.user.UserDtoMapper;
+import jotalac.market_viewer.market_viewer_api.dto.user.UsernameAndApiKeysDto;
 import jotalac.market_viewer.market_viewer_api.entity.ApiKey;
 import jotalac.market_viewer.market_viewer_api.entity.ApiKeyProvider;
 import jotalac.market_viewer.market_viewer_api.entity.User;
@@ -107,6 +108,13 @@ public class UserService implements UserDetailsService {
 
         user.setUsername(candidate);
         return user.getUsername();
+    }
+
+    @Transactional
+    public List<ApiKeyProvider> getSavedApiKeyProviders(String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException(userNotFoundMsg));
+
+        return apiKeyRepository.findByUser(user).stream().map(ApiKey::getEndpoint).toList();
     }
 
     private void validateApiKey(ApiKeyCreateDto apiKeyCreateDto) {
