@@ -26,9 +26,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -183,6 +181,45 @@ public class DeviceService {
         Integer screenIndex = screen.getPosition();
         screenRepository.delete(screen);
         screenRepository.changeIndicesAfterDelete(deviceId, screenIndex);
+    }
+
+    @Transactional
+    public void removeScreens(Integer deviceId, Set<Integer> screenIdsToDelete, String username) {
+        User user  = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
+        Device device = deviceRepository.findByIdAndUser(deviceId, user).orElseThrow(() -> new NotFoundException("Device not found"));
+
+        List<Screen> allDeviceScreens = screenRepository.getScreensByDevice(device);
+
+        //validate if all screen are present
+        Set<Integer> existingScreenIds = allDeviceScreens.stream()
+                .map(Screen::getId)
+                .collect(Collectors.toSet());
+
+        for (Integer id : screenIdsToDelete) {
+            if (!existingScreenIds.contains(id)) {
+                throw new NotFoundException("Screen with id - " + id + " not found on this device");
+            }
+        }
+
+
+        List<Screen> screensToDelete = allDeviceScreens.stream()
+                .filter(screen -> screenIdsToDelete.contains(screen.getId()))
+                .toList();
+
+        List<Screen> screensToKeep = allDeviceScreens.stream()
+                .filter(screen -> !screenIdsToDelete.contains(screen.getId()))
+                .sorted(Comparator.comparing(Screen::getPosition))
+                .toList();
+
+        if (!screensToDelete.isEmpty()) {
+            screenRepository.deleteAll(screensToDelete);
+        }
+
+        // clean up the position of the undeleted screens
+        for (int i = 0; i < screensToKeep.size(); i++) {
+            screensToKeep.get(i).setPosition(i);
+        }
+
     }
 
     @Transactional

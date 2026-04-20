@@ -58,6 +58,12 @@ public class DeviceController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    @DeleteMapping("/{deviceId}/screen")
+    public ResponseEntity<MessageResponse> removeScreens(@PathVariable Integer deviceId, @Valid @RequestBody ScreensDeleteRequest screensDeleteList, Principal principal) {
+        deviceService.removeScreens(deviceId, screensDeleteList.screenIds(), principal.getName());
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
     @GetMapping("/{deviceId}/screen")
     public ResponseEntity<List<ScreenDto>> getDeviceScreens(@PathVariable Integer deviceId, Principal principal) {
         List<ScreenDto> deviceScreens = deviceService.getAllScreensForDevice(deviceId, principal.getName());
