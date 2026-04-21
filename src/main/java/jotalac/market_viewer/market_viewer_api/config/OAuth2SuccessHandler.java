@@ -1,5 +1,6 @@
 package jotalac.market_viewer.market_viewer_api.config;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jotalac.market_viewer.market_viewer_api.entity.OAuthProvider;
@@ -15,6 +16,7 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 @Component
 @RequiredArgsConstructor
@@ -40,7 +42,29 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         String token = jwtService.generateToken(user.getId());
 
-        getRedirectStrategy().sendRedirect(request, response, frontendUrl+"/oauth2/github/callback?token=" + token);
+        //choose redirect url based on device type
+        boolean isMobile = false;
+        String redirectUrl;
+
+        if (request.getCookies() != null) {
+            isMobile = Arrays.stream(request.getCookies())
+                    .anyMatch(cookie -> "client_type".equals(cookie.getName()) && "mobile".equals(cookie.getValue()));
+        }
+
+        if (isMobile) {
+            redirectUrl = "marketviewer://sso/callback?token=" + token;
+            // delete the used cookie
+            Cookie deleteCookie = new Cookie("client_type", null);
+            deleteCookie.setMaxAge(0);
+            deleteCookie.setPath("/");
+            response.addCookie(deleteCookie);
+        } else {
+            redirectUrl = frontendUrl+"/oauth2/github/callback?token=" + token;
+        }
+
+        log.info("Redirect to: {}", redirectUrl);
+
+        getRedirectStrategy().sendRedirect(request, response, redirectUrl);
     }
 
 

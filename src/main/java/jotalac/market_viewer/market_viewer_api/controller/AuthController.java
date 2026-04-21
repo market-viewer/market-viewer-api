@@ -1,5 +1,7 @@
 package jotalac.market_viewer.market_viewer_api.controller;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jotalac.market_viewer.market_viewer_api.dto.MessageResponse;
 import jotalac.market_viewer.market_viewer_api.dto.auth.*;
@@ -9,10 +11,9 @@ import jotalac.market_viewer.market_viewer_api.service.auth.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/auth")
@@ -43,6 +44,21 @@ public class AuthController {
         authService.recoverAccount(recoverRequestDto);
 
         return ResponseEntity.status(HttpStatus.OK).body(new MessageResponse("Password updated successfully"));
+    }
+
+    //sso endpoint for mobile devices - redirect to different uri
+    @GetMapping("/sso/mobile")
+    public void startMobileSSOAuth(HttpServletResponse response) throws IOException {
+        // add the cookie to the response (that user is on mobile)
+        Cookie mobileCookie = new Cookie("client_type", "mobile");
+        mobileCookie.setPath("/");
+        mobileCookie.setHttpOnly(true);
+        mobileCookie.setMaxAge(300);
+
+        response.addCookie(mobileCookie);
+
+        //redirect to the default sso entrypoint
+        response.sendRedirect("/oauth2/authorization/github");
     }
 
 }
