@@ -15,43 +15,25 @@ Backend REST API for the **Market Viewer** — a device that displays real-time 
 
 ## Environment Variables
 
-Create a `.env` file in the project root:
+Copy `.env.example` to `.env` and set the variables:
 
-```dotenv
-#db connection
-POSTGRES_DB=
-POSTGRES_USER=
-POSTGRES_PASSWORD=
-
-#encryption
-ENCRYPT_PASSWORD=
-ENCRYPT_SALT=
-
-GEMINI_MODEL=
-
-#configuation
-DEPLOY_ENVIROMENT=(local / prod)
-FRONTEND_URL=
-SHOW_ERROR_TRACE=
-
-#JWT
-JWT_SECRET=
-#24h
-JWT_EXPIRATION=
-
-#github sso
-GITHUB_CLIENT_ID=
-GITHUB_CLIENT_SECRET=
 ```
+cp .env.docker .env
+```
+> Note: Update environment variables for public API deployments. Default values are safe for local use only.
 
 ---
 
 ## Running with Docker
 
-**Production (build + run everything):**
+1) Download the latest release or clone this repo
+2) Run with docker
 
+- run these commands (for linux):
 ```bash
-docker compose up --build
+git clone https://github.com/market-viewer/api.git &&
+cp .env.example .env &&
+docker compose up -d
 ```
 
 The API will be available at `http://localhost:8080`.

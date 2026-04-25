@@ -1,3 +1,5 @@
+# for production, uses networks that is needed when using reverse proxy on server
+
 services:
   # Database Service
   postgres:
@@ -14,6 +16,8 @@ services:
       retries: 5
     ports:
       - "127.0.0.1:5432:5432"
+    networks:
+      - global-web
 
   # Application Service
   market-viewer-app:
@@ -32,6 +36,13 @@ services:
 
       # dont start the development database
       - SPRING_DOCKER_COMPOSE_ENABLED=false
+    networks:
+      - global-web
+
+
+networks:
+  global-web:
+    external: true
 
 volumes:
   db_data:
