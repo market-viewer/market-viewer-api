@@ -32,6 +32,7 @@ cp .env.docker .env
 - run these commands (for linux):
 ```bash
 git clone https://github.com/market-viewer/api.git &&
+cd api &&
 cp .env.example .env &&
 docker compose up -d
 ```

@@ -32,6 +32,8 @@ services:
 
       # dont start the development database
       - SPRING_DOCKER_COMPOSE_ENABLED=false
+    ports:
+      - "8080:8080"
 
 volumes:
   db_data:

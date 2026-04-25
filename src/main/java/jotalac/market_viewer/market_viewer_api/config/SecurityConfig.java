@@ -13,6 +13,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -36,6 +40,12 @@ public class SecurityConfig {
     @Value("${app.cors.allowed-origin}")
     private String allowedOrigin;
 
+    @Value("${app.github.client-id:}")
+    private String githubClientId;
+
+    @Value("${app.github.client-secret:}")
+    private String githubClientSecret;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, OAuth2SuccessHandler oAuth2SuccessHandler) throws Exception {
         http
@@ -48,10 +58,17 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .cors(conf -> conf.configurationSource(corsConfigurationSource()))
-                .oauth2Login(oauth2 -> oauth2.successHandler(oAuth2SuccessHandler))
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.FORBIDDEN))
                 );
+
+        //add github sso when the credentials are provided
+        if (githubClientId != null && !githubClientId.isBlank()) {
+            http.oauth2Login(oauth2 -> oauth2
+                    .successHandler(oAuth2SuccessHandler)
+                    .clientRegistrationRepository(clientRegistrationRepository())
+            );
+        }
 
         return http.build();
     }
@@ -82,4 +99,15 @@ public class SecurityConfig {
         return source;
     }
 
+    private ClientRegistrationRepository clientRegistrationRepository() {
+        ClientRegistration githubRegistration = CommonOAuth2Provider.GITHUB
+                .getBuilder("github")
+                .clientId(githubClientId)
+                .clientSecret(githubClientSecret)
+                .scope("read:user")
+                .build();
+        return new InMemoryClientRegistrationRepository(githubRegistration);
+    }
+
 }
+
